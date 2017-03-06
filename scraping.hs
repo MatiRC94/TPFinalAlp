@@ -12,6 +12,9 @@ import Text.XML.Cursor (Cursor, content, element, fromDocument, child,
 findNodes :: Cursor -> [Cursor]
 findNodes = element "book" &// element "price" >=> child
 
+
+-- TODO ESTO es una MIERDA
+
 -- Extract the data from each node in turn
 extractData = T.concat . content
 
