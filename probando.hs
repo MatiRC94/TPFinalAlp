@@ -16,6 +16,8 @@ url3 = "http://www.clarin.com"
 url4 = "http://www.lacapital.com.ar"
 url5 = "http://www.perfil.com"
 
+-- data Urls = [String]
+-- TODO Scrapear concurrentemente
 
 cursorFor :: String -> IO Cursor
 cursorFor u = do
