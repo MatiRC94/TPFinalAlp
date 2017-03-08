@@ -8,6 +8,8 @@ import Data.Text.IO (putStrLn)
 import Text.HTML.DOM (parseLBS)
 import Text.XML.Cursor (Cursor, attribute, content, element, fromDocument, ($//), ($|), ($/) , (&//), (&/), (&|))
 
+import DatayTypes
+
 -- The URL we're going to search
 url  = "http://www.ole.com.ar"
 url1 = "http://www.laizquierdadiario.com"
