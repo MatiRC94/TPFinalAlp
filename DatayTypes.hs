@@ -29,7 +29,7 @@ checkUrl :: Url -> IO String
 checkUrl s = do 
                 x <- try ( simpleHTTP (getRequest s) ) :: IO (Either SomeException (Result (Response String) ) )
                 case x of
-                     Left ex   -> return "ONLINE"
-                     Right val -> return "OFFLINE" 
+                     Left ex   -> return $ "OFFLINE"
+                     Right val -> return $ "ONLINE"
 
 
