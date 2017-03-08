@@ -25,11 +25,11 @@ listUrls (Media p) = mapM_ putStrLn p
 listUrls (Baja p)  = mapM_ putStrLn p
 
 
-checkUrl :: Url -> IO ()
+checkUrl :: Url -> IO String
 checkUrl s = do 
                 x <- try ( simpleHTTP (getRequest s) ) :: IO (Either SomeException (Result (Response String) ) )
                 case x of
-                     Left ex   -> putStrLn $ "La pagina  "++s++" se encuentra: ONLINE "
-                     Right val -> putStrLn $ "La pagina  "++s++" se encuentra: OFFLINE" 
+                     Left ex   -> return "ONLINE"
+                     Right val -> return "OFFLINE" 
 
 
