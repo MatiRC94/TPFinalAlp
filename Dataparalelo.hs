@@ -4,8 +4,9 @@ module Dataparalelo where
 import Network.HTTP (getRequest,simpleHTTP,Response)
 import Network.Stream (Result)
 import Control.Exception (try,SomeException)
-import Data.List (delete)
-
+import Data.List (delete,union)
+import System.Console.ANSI as A
+import Data.Char (digitToInt)
 
 data Priority = Alta | Media | Baja deriving Show
 
@@ -13,13 +14,24 @@ data Prior = P { a :: [Url]
                 ,m :: [Url]
                 ,b :: [Url] } deriving Show
 
+
+data Cfg = C { colorFondo :: SGR
+               ,colorFuente :: SGR } deriving Show
+
+data Config = Fondo Int Int |
+              Fuente Int Int deriving Show
+
+
 type Url = String
 
+colores =["0-Negro","1-Rojo","2-Verde","3-Amarillo","4-Azul","5-Magenta","6-Cyan","7-Blanco"]
+intensidad = ["0-Opaco","1-Vivido"]
 
-addUrl2 :: Url -> Priority -> Prior -> Prior
-addUrl2 s Alta (P a m b)  = P (s:a) m b
-addUrl2 s Media (P a m b) = P a (s:m) b
-addUrl2 s Baja (P a m b)  = P a m (s:b)
+
+addUrl :: Url -> Priority -> Prior -> Prior
+addUrl s Alta (P a m b)  = P (union [s] a) m b
+addUrl s Media (P a m b) = P a (union [s] m) b
+addUrl s Baja (P a m b)  = P a m (union [s] b)
 
 
 removeUrl :: Url -> Prior -> Prior
@@ -45,6 +57,45 @@ checkUrl s = do
                      Right val -> return $ "ONLINE"
 
 
-initial = P [] [] []
 
-caca = addUrl2 "1" Alta ( addUrl2 "3" Baja ( addUrl2 "11" Alta ( addUrl2 "2" Media ( initial) ) ) )
+
+elegirColor :: IO ()
+elegirColor = do
+            putStrLn "Elija su estilo "
+            estilo
+
+
+estilo :: IO ()
+estilo = do
+        putStrLn "Color de Fondo:"
+        c1  <- listaColores
+        putStr  "\n"
+        putStrLn "Intensidad del color:"
+        i1 <- intenSidad
+        putStr  "\n"
+        putStrLn "Color de Fuente:"
+        c2  <- listaColores
+        putStr  "\n"
+        putStrLn "Intensidad del color:"
+        i2 <- intenSidad
+        putStr  "\n" 
+        setSGR [SetColor Foreground (toColorI (digitToInt(i2)) ) (toColor (digitToInt(c2)) ), SetColor Background (toColorI (digitToInt(i1))) (toColor (digitToInt(c1)))]
+
+listaColores :: IO Char
+listaColores = do 
+                mapM_ putStrLn colores
+                putStr  "\n"
+                getChar
+
+
+intenSidad :: IO Char
+intenSidad = do
+                mapM_ putStrLn intensidad
+                putStr  "\n"
+                getChar
+     
+toColor:: Int -> Color
+toColor = toEnum
+
+toColorI:: Int -> ColorIntensity
+toColorI = toEnum
