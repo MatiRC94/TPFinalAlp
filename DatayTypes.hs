@@ -1,22 +1,32 @@
 
 module DatayTypes where
 
-import Network.HTTP
-import Network.Stream
-import Control.Exception
+import Network.HTTP (getRequest,simpleHTTP,Response)
+import Network.Stream (Result)
+import Control.Exception (try,SomeException)
+import Data.List (delete)
+
+
 data Priority = Alta [Url] | Media [Url] | Baja [Url] deriving Show
+
+data Prior = P { a :: [Url]
+                ,m :: [Url]
+                ,b :: [Url] } deriving Show
 
 type Url = String
 
-addUrls :: Url -> Priority -> Priority
-addUrls s (Alta p)  = Alta (s : p)
-addUrls s (Media p)  = Media (s : p)
-addUrls s (Baja p)  = Baja (s : p)
+addUrl :: Url -> Priority -> Priority
+addUrl s (Alta p)  = Alta (s : p)
+addUrl s (Media p)  = Media (s : p)
+addUrl s (Baja p)  = Baja (s : p)
 
 
 
---removeUrls :: Url -> Priority
---removeUrls s = 
+removeUrl :: Url -> Priority -> Priority
+removeUrl s (Alta p)  = Alta $ delete s p
+removeUrl s (Media p) = Media $ delete s p
+removeUrl s (Baja p)  = Baja $ delete s p
+
 
 
 listUrls :: Priority -> IO ()
@@ -32,6 +42,4 @@ checkUrl s = do
                      Left ex   -> return $ "OFFLINE"
                      Right val -> return $ "ONLINE"
 
-
---
 
