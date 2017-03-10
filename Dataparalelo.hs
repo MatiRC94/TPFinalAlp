@@ -21,6 +21,7 @@ data Cfg = C { colorFondo :: SGR
 data Config = Fondo Int Int |
               Fuente Int Int deriving Show
 
+--data Prio = Pr [Url] [Url] [Url] deriving Show
 
 type Url = String
 
