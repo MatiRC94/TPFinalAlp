@@ -80,7 +80,7 @@ Derived primitives
 > char                          :: Char -> Parser Char
 > char x                        =  sat (== x)
 > 
-> string                        :: String -> Parser String
+> string                        :: String -> Parser String 
 > string []                     =  return []
 > string (x:xs)                 =  do char x
 >                                     string xs
