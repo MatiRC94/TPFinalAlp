@@ -6,12 +6,9 @@ import System.IO
 import System.Console.Terminal.Size 
 import Data.Maybe (fromJust)
 import Dataparalelo
+import Configure
 
 
-
-initial = P [] [] []
-
-caca = addUrl "1" Alta ( addUrl "3" Baja ( addUrl "11" Alta ( addUrl "2" Media ( initial) ) ) )
 
 
 
@@ -37,18 +34,31 @@ cursorCol = tamano >>= \t -> return (div (t-35) 2)
 main :: IO ()
 main = do
     clearScreen
+    checkCfg
+    content <- readFile cfg
+    urls <- procesarConf content
+    clearScreen
     setTitle "Resumidor de Noticias"
     t <- cursorCol
     setCursorPosition 0 t
     putStr "Bienvenido al Resumidor de noticias"
     setCursorPosition 5 0
-    elegirColor
+    -- Menu inicial
+--    url2 <- addUrl "http://www.clarin.com/" Alta urls
+    listUrls urls
+    checkAll urls
+
+
+
+
+
+{-
+    0elegirColor
     clearScreen
     setCursorPosition 0 0
 
-
-
-
-
+-}
+         
+         
 
 

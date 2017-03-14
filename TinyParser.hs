@@ -1,13 +1,13 @@
 module TinyParser where
 
-import Parsing --(parse, Parser, char, symbol, space, nat,(<|>),endBy)
+import Parsing 
 import Dataparalelo as D
+
 
 
 
 fond :: Parser Config
 fond = do
-         char '#'
          symbol "Fondo"
          space
          c <- nat
@@ -18,7 +18,6 @@ fond = do
 
 font :: Parser Config
 font = do
-         char '#'
          symbol "Fuente"
          space
          c <- nat
@@ -27,56 +26,105 @@ font = do
          return $ Fuente c i
 
                
-                   
-prueba :: Parser Config
-prueba = (do fondo  <- fond
-             return fondo)
-          <|> do fuente <- font 
-                 return $ fuente         
-
-
-
-comment :: Parser [Config]
-comment = do
-            endBy prueba (do 
-                           space
-                           sepBy com1 space
-                           space)
+ {-                  
+conf  :: Parser Config
+conf  = (do fondo  <- fond
+            return fondo)
+         <|> do fuente <- font 
+                return $ fuente         
+-}
 
 com1 :: Parser Char
 com1 = do
-         alphanum <|> (char '-') <|> (char '.')  <|> (char '/')
+         alphanum <|> (char '-') <|> (char '.') <|> (char '/')                      
 
 
-
-url :: Parser Prior
-url =  do
-         char '#'
-         symbol "P"
-         space
-         char '['
-         alta <- aux
-         char ']'
-         space
-         char '['
-         media <- aux
-         char ']'
-         space
-         char '['
-         baja <- aux
-         char ']'
-         return $ D.P alta media baja
+urlP :: Parser Prior
+urlP =  do
+          symbol "P"
+          space
+          char '['
+          alta <- urlParse
+          char ']'
+          space
+          char '['
+          media <- urlParse
+          char ']'
+          space
+          char '['
+          baja <- urlParse
+          char ']'
+          return $ D.P alta media baja
 
 
-aux :: Parser [Url]
-aux = do
-        sepBy (identifier <|> aux2) (char ',') 
+urlParse :: Parser [Url]
+urlParse = do
+             sepBy ( aux2 ) (char ',') 
 
 aux2 :: Parser String
-aux2 = do
-        p <- string "."
-        return p
-      <|> 
-     do b <- string "/"
-        return b
+aux2 = many1((do 
+                x <- alphanum
+                return x )
+             <|> do p <- char '.'
+                    return p
+             <|> do p <- char '/'
+                    return p
+             <|> do p <- char ':'
+                    return p
+             <|> do p <- char '_'
+                    return p
+             <|> do p <- char '-'
+                    return p )
+
+{-                         
+num# -> # n | comment
+n -> P [] [] [] n| Fuente i i n| Fondo i i n| space  
+space -> \n comment | '_' space|  
+comment -> comentariosyeso num#
+-}
+
+p1 :: [Config] -> Prior -> Parser ([Config],Prior)
+p1 config (D.P a m b)  = (do
+                            space
+                            char '#' 
+                            space
+                            (do 
+                               prior <- urlP
+                               p1 config prior
+                               <|> do
+                                     fondo <- fond
+                                     p1 (reemp fondo config) (D.P a m b)
+                               <|> do
+                                     fuente <- font
+                                     p1 (reemp fuente config) (D.P a m b) ) )
+                            <|> do 
+                                  space
+                                  com1
+                                  space
+                                  p1 config (D.P a m b)
+                            <|> return (config,(D.P a m b))
+                                   
+
+
+reemp :: Config -> [Config] -> [Config]
+reemp c [] = [c]
+reemp (Fondo a b) (x:xs) = case x of
+                                Fondo p t -> (Fondo a b):xs
+                                _         -> x : (reemp (Fondo a b) xs)
+reemp (Fuente a b) (x:xs) = case x of
+                                Fuente p t -> (Fuente a b):xs
+                                _          -> x : (reemp (Fuente a b) xs)
+
+
+
+--parse (p1 [] (D.P [] [] [])) "#P [] [http://www.lacapital.com,http://www.rosario3.com] [] caca \n caca \n #Fondo 0 0 \n #Fuente 7 1 caca"
+
+
+
+
+
+
+
+
+
 

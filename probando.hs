@@ -9,7 +9,10 @@ import Text.HTML.DOM (parseLBS)
 import Text.XML.Cursor (Cursor, attribute, content, element, fromDocument, ($//), ($|), ($/) , (&//), (&/), (&|))
 
 import DatayTypes
-
+-- https://www.pagina12.com.ar/diario/rss/principal.xml
+-- http://www.clarin.com/rss/lo-ultimo/
+--
+--
 -- The URL we're going to search
 url  = "http://www.ole.com.ar"
 url1 = "http://www.laizquierdadiario.com"

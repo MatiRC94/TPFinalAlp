@@ -25,6 +25,8 @@ data Config = Fondo Int Int |
 
 type Url = String
 
+--TODO LO RELACIONADO A LA DEFINICION DE DATOS Y ESTRUCT
+
 colores =["0-Negro","1-Rojo","2-Verde","3-Amarillo","4-Azul","5-Magenta","6-Cyan","7-Blanco"]
 intensidad = ["0-Opaco","1-Vivido"]
 
@@ -50,53 +52,20 @@ listUrls p = do
 
 
 
-checkUrl :: Url -> IO String
+checkUrl :: Url -> IO ()
 checkUrl s = do 
                 x <- try ( simpleHTTP (getRequest s) ) :: IO (Either SomeException (Result (Response String) ) )
                 case x of
-                     Left ex   -> return $ "OFFLINE"
-                     Right val -> return $ "ONLINE"
+                     Left ex   -> putStrLn "OFFLINE y cuidado que no funciona con https"
+                     Right val -> putStrLn "ONLINE"
+
+checkAll' :: [Url] -> IO ()
+checkAll' url = mapM_ checkUrl url
+
+checkAll :: Prior -> IO ()
+checkAll (P a m b) = do
+                       checkAll' a
+                       checkAll' m
+                       checkAll' b  
 
 
-
-
-elegirColor :: IO ()
-elegirColor = do
-            putStrLn "Elija su estilo "
-            estilo
-
-
-estilo :: IO ()
-estilo = do
-        putStrLn "Color de Fondo:"
-        c1  <- listaColores
-        putStr  "\n"
-        putStrLn "Intensidad del color:"
-        i1 <- intenSidad
-        putStr  "\n"
-        putStrLn "Color de Fuente:"
-        c2  <- listaColores
-        putStr  "\n"
-        putStrLn "Intensidad del color:"
-        i2 <- intenSidad
-        putStr  "\n" 
-        setSGR [SetColor Foreground (toColorI (digitToInt(i2)) ) (toColor (digitToInt(c2)) ), SetColor Background (toColorI (digitToInt(i1))) (toColor (digitToInt(c1)))]
-
-listaColores :: IO Char
-listaColores = do 
-                mapM_ putStrLn colores
-                putStr  "\n"
-                getChar
-
-
-intenSidad :: IO Char
-intenSidad = do
-                mapM_ putStrLn intensidad
-                putStr  "\n"
-                getChar
-     
-toColor:: Int -> Color
-toColor = toEnum
-
-toColorI:: Int -> ColorIntensity
-toColorI = toEnum
