@@ -101,20 +101,28 @@ toColorI = toEnum
 
 changeConfigCol :: Prior -> [Int] -> IO ()
 changeConfigCol (D.P a m b) c = do
-                                  writeFile cfg $ "#Fondo "++ show (c!!0) ++" "++ show (c!!1) ++"\n"++"#Fuente "++ show (c!!2) ++" "++ show (c!!3) ++"\n"++"#P["++auxurl a ++"] ["++auxurl m ++"] ["++auxurl b++"]"
+                                  writeFile cfg $ "#Fondo "++ show (c!!0) ++" "++ show (c!!1) ++"\n"++"#Fuente "++ show (c!!2) ++" "++ show (c!!3) ++"\n"++"#P "++show a  ++ show m ++show b
                                   procesarConf
                                   return ()
 
-
-agregarUrlConf :: Url -> Priority -> Prior -> [Config] -> IO () 
-agregarUrlConf url p pr conf = do
+{-
+agregarUrlCon2 :: Url -> Priority -> Prior -> [Config] -> IO () 
+agregarUrlCon2 url p pr conf = do
                                  writeFile cfg $ "#"++show (conf!!0) ++"\n"++"#"++ show (conf!!1) ++"\n"++"#P ["++auxurl(a newUrl) ++"] ["++auxurl (m newUrl)++"] ["++auxurl (b newUrl)++"]"
                                  procesarConf
                                  return ()
                                  where newUrl = (addUrl url p pr)
+-}
 
 
+agregarUrlConf :: Url -> Priority -> Prior -> [Config] -> IO () 
+agregarUrlConf url p pr conf = do
+                                 writeFile cfg $ "#"++show (conf!!0) ++"\n"++"#"++ show (conf!!1) ++"\n"++"#P "++show(a newUrl) ++ show (m newUrl)++show (b newUrl)
+                                 procesarConf
+                                 return ()
+                                 where newUrl = (addUrl url p pr)
 
+{-
 aux10 :: [Url] -> [Url]
 aux10 []     = []
 aux10 [x]    = [x]
@@ -123,7 +131,7 @@ aux10 (x:xs) = (x++","): (aux10 xs)
 auxurl :: [Url] -> [Char]
 auxurl u = concat (aux10 u)
 
-
+-}
 
 
 
