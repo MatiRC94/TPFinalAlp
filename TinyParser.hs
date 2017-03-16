@@ -44,14 +44,17 @@ urlP =  do
           symbol "P"
           space
           char '['
+   --       char '"'
           alta <- urlParse
           char ']'
           space
           char '['
+   --       char '"'
           media <- urlParse
           char ']'
           space
           char '['
+  --        char '"'
           baja <- urlParse
           char ']'
           return $ D.P alta media baja
@@ -76,9 +79,20 @@ aux2 = many1((do
              <|> do p <- char '-'
                     return p )
 
+aux3 :: Parser ()
+aux3 = do
+         char '"'
+         char ','
+         char '"'
+         space
+       <|> do
+             char '"'
+             space
+       <|> space
 {-                         
 num# -> # n | comment
-n -> P [] [] [] n| Fuente i i n| Fondo i i n| space  
+n -> P [algo] [algo] [algo n| Fuente i i n| Fondo i i n| space  
+algo -> '"' string '"' ( ']' | ',' ) 
 space -> \n comment | '_' space|  
 comment -> comentariosyeso num#
 -}
@@ -117,10 +131,9 @@ reemp (Fuente a b) (x:xs) = case x of
 
 
 
---parse (p1 [] (D.P [] [] [])) "#P [] [http://www.lacapital.com,http://www.rosario3.com] [] caca \n caca \n #Fondo 0 0 \n #Fuente 7 1 caca"
+--parse (p1 [] (D.P [] [] [])) "#P [] ["http://www.lacapital.com","http://www.rosario3.com"] [] caca \n caca \n #Fondo 0 0 \n #Fuente 7 1 caca"
 
-
-
+--parse (p1 [] (D.P [] [] [])) "#Fondo 4 0 \n#Fuente 3 1\n#P [http://www.clarin.com/,http://www.lacapital.com] [] []"
 
 
 
