@@ -1,7 +1,7 @@
 
 import feedparser
 
-d = feedparser.parse('http://www.clarin.com/rss/lo-ultimo/')
+d = feedparser.parse('http://www.laizquierdadiario.com/spip.php?page=backend_portada')
 # .. skipped handling http errors, cacheing ..
 
 for e in d.entries:
