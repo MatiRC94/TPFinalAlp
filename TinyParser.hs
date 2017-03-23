@@ -38,7 +38,7 @@ com1 :: Parser Char
 com1 = do
          alphanum <|> (char '-') <|> (char '.') <|> (char '/')                      
 
-
+--Parser de Prior
 urlP :: Parser Prior
 urlP =  do
           symbol "P"
@@ -62,11 +62,12 @@ urlP =  do
           char ']'
           return $ D.P alta media baja
 
-
+{-
 urlParse :: Parser [Url]
 urlParse = do
              sepBy ( aux2 ) (char ',') 
 
+-- Para parsear paginas
 aux2 :: Parser String
 aux2 = many1(   alphanum
                  <|> char '.'
@@ -74,15 +75,19 @@ aux2 = many1(   alphanum
                  <|> char ':'
                  <|> char '_'
                  <|> char '-'
-                 <|>  char '\"' ) 
+                 <|> char '\"' ) 
 
-auxb :: Parser Char
-auxb =   alphanum 
-         <|>   char '.'
+-}
+
+-- Para parsear caracteres "raros" de las urls
+auxU :: Parser Char
+auxU =   alphanum 
+         <|> char '.'
          <|> char '/'
          <|> char ':'
          <|> char '_'
          <|> char '-'
+         <|> char '\\'
 
  
 
@@ -90,7 +95,7 @@ auxb =   alphanum
 algo :: Parser [Url]
 algo = (do
           char '\"'
-          xs <- many auxb
+          xs <- many auxU
           char '\"'
           ((do
               char ','
@@ -101,10 +106,9 @@ algo = (do
           return [])
 {-                         
 num# -> # n | comment
-n -> P [algo] [algo] [algo] n| Fuente i i n| Fondo i i n| space  
+n -> P [algo] [algo] [algo] n| Fuente i i n| Fondo i i n 
 algo -> '"' string '"' (E | ','algo ) | E
-space -> \n comment | '_' space|  
-comment -> comentariosyeso num#
+comment -> alphanumsYspaces num#
 -}
 
 p1 :: [Config] -> Prior -> Parser ([Config],Prior)
@@ -150,6 +154,135 @@ reemp (Fuente a b) (x:xs) = case x of
 --print ( a(fst ((parse urlP  ( "P [\"hola][][]") !! 0) ) ) )
 
 -- " #Fondo 4 0 \n#Fuente 3 1 \n #P [\"http://www.lacapital.com\"][][] "
+
+
+
+
+parseNews :: News -> Parser News
+parseNews (N a m b)= (do
+                        space
+                        char '#' 
+                        space
+                        (do
+                           space
+                           altanew <- altaNew
+                           parseNews (N altanew m b)
+                           <|> do
+                                 space
+                                 medianew <- mediaNew
+                                 parseNews (N a medianew b)
+                           <|> do
+                                 space
+                                 bajanew <- bajaNew
+                                 parseNews (N a m bajanew) ) )
+                            <|> do 
+                                  space
+                                  com1
+                                  space
+                                  parseNews (N a m b) 
+                            <|> return (N a m b) 
+                
+altaNew :: Parser ([(String,Url)],Int)
+altaNew = do
+            symbol "NA"
+            space
+            alta <- parseoT
+            return alta
+
+mediaNew :: Parser ([(String,Url)],Int)
+mediaNew = do
+             symbol "NM"
+             space
+             media <- parseoT
+             return media
+
+bajaNew :: Parser ([(String,Url)],Int)
+bajaNew = do
+            symbol "NB"
+            space
+            baja <- parseoT
+            return baja
+
+
+parseoT  :: Parser ([(String,Url)],Int)
+parseoT = do
+            char '('
+            t <- tuplas
+            char ')'
+            return t
+
+
+tuplas :: Parser ([(String,Url)],Int)
+tuplas = do
+            char '['
+            t <- tuplas'
+            char ']'
+            space
+            char ','
+            space
+            n <- nat
+            return (t,n)
+
+tuplas' :: Parser [(String,Url)]
+tuplas' = do
+            char '('
+            char '\"'
+            space
+            xs <- many auxN
+            (string "\",\"" <|> string "\"\",\"")
+            url <- many auxU
+            char '\"'
+            char ')'
+            ((do
+                 char ','
+                 t2 <- tuplas'
+                 return ( [(xs,url)]++t2 ) )
+              <|> return ([(xs,url)]) )
+          <|> return []
+
+--Parsear los titulos de las noticias 
+auxN :: Parser Char
+auxN =   alphanum 
+         <|> char '.'
+         <|> char '/'
+         <|> char '\\'
+         <|> char ':'
+         <|> char '_'
+         <|> char '-'
+         <|> char ','
+         <|> char '$'
+         <|> char '#'
+         <|> char '@'
+         <|> char '&'
+         <|> char '\''
+         <|> char '+'
+         <|> char '%'
+         <|> char '!'
+         <|> char '?'
+         <|> latin1
+         <|> upper
+         <|> space'
+         <|> (do char '\"'
+                 (alphanum <|> upper <|> latin1 <|> char '.' <|> latin1 <|> ( do char '\"' ; char' ',' )))
+
+
+latin1 :: Parser Char
+latin1 = (char '®' <|> char '¡' <|> char '¿' <|> char '°' <|> char 'º' <|> char 'Á' <|> char 'É' <|> char 'Í' <|> char 'Ó' <|> char 'Ú' <|> char 'Ü' <|> char 'Ñ' <|> char 'ñ' <|> char 'á' <|> char 'é' <|> char 'í' <|> char 'ó' <|> char 'ú' <|> char 'ü' )
+
+
+--"# NA ([(\"choque\",\"www.choque.com\")],1) \n# NM ([],0) \n # NB ([],0)"
+
+{-  
+ num# -> # n | comment
+ n -> (NA | NM | NB ) parseoT
+ parseoT -> "(" tuplas ")"
+ tuplas -> "[" tuplas' "]" "," Int  
+ tuplas' -> "(" "\"" string "\"" "," "\"" string "\"" ")" ( "," tupla' | E ) | E
+ comment -> alphanumsYspaces num#
+-}
+
+-- parse (parseNews (N ([],0) ([],0) ([],0) )) "# NA ([(\"\"Le pido a la gobernadora Vidal que recorra los hospitales sin aviso\"\",\"http://www.clarin.com/cartas-al-pais/pido-gobernadora-vidal-recorra-hospitales-aviso_0_HkJtghb3g.html\"),(\"\"Le pido a la gobernadora Vidal que recorra los hospitales sin aviso\"\",\"http://www.clarin.com/cartas-al-pais/pido-gobernadora-vidal-recorra-hospitales-aviso_0_HkJtghb3g.html\")],2) \n# NM ([],0) \n# NB ([],0)"
+
 
 
 

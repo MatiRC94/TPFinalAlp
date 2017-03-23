@@ -3,6 +3,7 @@ Functional parsing library from chapter 8 of Programming in Haskell,
 Graham Hutton, Cambridge University Press, 2007.
 
 Modificado por Mauro Jaskelioff
+Agrego space',char'
 
 > module Parsing (module Control.Applicative, module Parsing) where
 >
@@ -76,9 +77,12 @@ Derived primitives
 > 
 > alphanum                      :: Parser Char
 > alphanum                      =  sat isAlphaNum
-> 
+>
 > char                          :: Char -> Parser Char
 > char x                        =  sat (== x)
+> 
+> char'                         :: Char -> Parser Char
+> char' x                       =  sat (/= x)
 > 
 > string                        :: String -> Parser String 
 > string []                     =  return []
@@ -112,6 +116,9 @@ Derived primitives
 > space                         :: Parser ()
 > space                         =  do many (sat isSpace)
 >                                     return ()
+>
+> space'                        :: Parser Char
+> space'                        = sat isSpace
 >	
 > sepBy                         :: Parser a -> Parser sep -> Parser [a]
 > sepBy p sep                   =  sepBy1 p sep <|> return []

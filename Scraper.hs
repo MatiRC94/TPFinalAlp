@@ -13,7 +13,7 @@ import Network.URI (parseURI, uriToString)
 rss  = "http://www.clarin.com/rss/lo-ultimo/"
 rss2 = "http://www.laizquierdadiario.com/spip.php?page=backend_portada"
 rss3 = "http://contenidos.lanacion.com.ar/herramientas/rss-origen=2"
-rss4 ="http://www.prensa.com/rss/section/1/"
+rss4 = "http://www.prensa.com/rss/section/1/"
 rss5 = "https://www.pagina12.com.ar/rss/secciones/el-pais/notas"
 rss6 = "http://tn.com.ar/rss.xml"      
 rss7 = "http://www.telam.com.ar/rss2/ultimasnoticias.xml"
@@ -26,6 +26,8 @@ rss13= "https://news.google.com.ar/news?cf=all&hl=es&pz=1&ned=es_ar&output=rss"
 rss14= "http://www.eltribuno.info/rss/salta/masleidas.xml"
 rss15= "http://www.perfil.com/rss/ultimomomento.xml"
 rss16= "http://diariolaopinion.com.ar/rss/general.xml"
+rss17= "http://www.ole.com.ar/rss/ultimas-noticias/"
+
 
 -- https://github.com/bergmark/feed/tree/master/src/Text/Feed   DE ACA COMO FUNCAN LAS FUNCIONES
 -- http://stackoverflow.com/questions/17038947/simple-rss-downloader-in-haskell/17044041#17044041    Parte del codigo

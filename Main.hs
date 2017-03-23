@@ -9,16 +9,6 @@ import Dataparalelo
 import Configure
 
 
-
-
-
-
-{-
-backColor :: Int -> Int -> SGR
-backColor c i = SetColor Background (toColorI (i)) (toColor (c))
- -}
-
-
 tamano2 :: IO (Window Int)
 tamano2 = size >>= \x -> return (fromJust x)
 
@@ -28,7 +18,11 @@ tamano = tamano2 >>= \x -> case x of
         
 cursorCol :: IO Int
 cursorCol = tamano >>= \t -> return (div (t-35) 2)            
-            
+
+
+--showNews' :: IO Prior ->  
+--showNews' =            
+
 
 
 main :: IO ()

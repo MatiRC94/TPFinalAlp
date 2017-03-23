@@ -11,7 +11,8 @@ import TinyParser
 
 
 initialConfig = "#Fondo 4 0 \n#Fuente 3 1 \n#P [] [] []"
-
+emptyData = D.P [] [] []
+emptyNews = (N ([],0) ([],0) ([],0))
 
 cfg = "Config/Config.cfg"
 --fpurl = "Config/Urls.cfg"
@@ -19,7 +20,7 @@ cfg = "Config/Config.cfg"
 -- TODO funcion estilo de dataparalelo aca, que modifique Config.cfg
 -- TODO add y remove url debe estar aca y modificar url.cfg
 --- ACA ESTA TODO LO QUE VENGA EN RELACION A LOS ARCHIVOS.CFG
-   
+
 
 
 
@@ -49,11 +50,12 @@ restoreDefault = do
 procesarConf :: IO ([Config],Prior)
 procesarConf = do
                   cont <- readFile cfg
-                  mapM_ evalConf $ fst (fst $ (parse (p1 [] (D.P [] [] []) ) cont ) !! 0 )
-                  return (fst (fst ( (parse (p1 [] (D.P [] [] []) ) cont ) !! 0))  ,(snd (fst $ (parse (p1 [] (D.P [] [] []) ) cont ) !! 0 )) )
-                --  where c = fst $ (parse (p1 [] (D.P [] [] []) ) cont ) !! 0 
+                  let c = (fst $ (parse (p1 [] emptyData ) cont ) !! 0 )
+                      in do mapM_ evalConf $ fst c
+                            return (fst c ,snd c)       --calcular una vez el fst c
 
---procesarConf :: String -> IO ()
+
+
 
 estilo :: Prior -> IO ()
 estilo p = do
