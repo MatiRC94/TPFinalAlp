@@ -37,7 +37,7 @@ main = do
     setCursorPosition 0 t
     putStr "Bienvenido al Resumidor de noticias"
     setCursorPosition 5 0
-    listUrls $ snd info
+    showUrls $ snd info
     checkAll $ snd info
     -- Menu inicial
 
@@ -45,6 +45,7 @@ main = do
 
 
 {-
+   procesarConf :: IO ([Config],Prior)
  --   estilo $ snd info
 --    agregarUrlConf "http://www.lacapital.com" Alta (snd info) (fst info)
 --    agregarUrlConf "http://www.clarin.com/" Alta (snd info) (fst info)
@@ -52,9 +53,11 @@ main = do
     0elegirColor
     clearScreen
     setCursorPosition 0 0
-    do info <- procesarConf     ; agregarUrlConf "http://www.lacapital.com" Alta (snd info) (fst info) 
-    do info <- procesarConf     ;    listUrls $ snd info
+    do info <- procesarConf     ; agregarUrlConf "http://www.ole.com.ar/rss/ultimas-noticias/" Alta (snd info) (fst info) 
+    do info <- procesarConf     ;  showUrls $ snd info
     do info <- procesarConf     ;  agregarUrlConf "http://www.clarin.com/" Alta (snd info) (fst info)
+    updateNews :: Priority -> Prior -> News -> IO ()
+    do info <- procesarConf     ; new <- findNews ;  updateNews Alta (snd info) new :: IO ()
 
 -}
          

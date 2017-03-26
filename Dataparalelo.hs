@@ -46,16 +46,14 @@ removeUrl :: Url -> Prior -> Prior
 removeUrl s (P a m b)  = P (delete s a) (delete s m) (delete s b)
 
 
-listUrls :: Prior -> IO ()
-listUrls p = do
+showUrls :: Prior -> IO ()
+showUrls p = do
                putStrLn "Urls de prioridad Alta:  "
                mapM_ putStrLn ( a p )
                putStrLn "Urls de prioridad Media: "
                mapM_ putStrLn ( m p )
                putStrLn "Urls de prioridad Baja:  "
                mapM_ putStrLn ( b p )
-
-
 
 checkUrl :: Url -> IO ()
 checkUrl s = do 
@@ -73,11 +71,12 @@ checkAll (P a m b) = do
                        checkAll' m
                        checkAll' b  
 
-getUrl :: Priority -> News -> Int -> Url
-getUrl Alta (N na nm nb) n  = if snd na < n+1 || n < 0 then "Error de Indece" else snd $ (fst na)!!n
-getUrl Media (N na nm nb) n = if snd nm < n+1 || n < 0 then "Error de Indece" else snd $ (fst nm)!!n
-getUrl Baja (N na nm nb) n  = if snd nb < n+1 || n < 0 then "Error de Indece" else snd $ (fst nb)!!n
+getUrlNews :: Priority -> News -> Int -> Url
+getUrlNews Alta (N na nm nb) n  = if snd na < n+1 || n < 0 then "Error de Indice" else snd $ (fst na)!!n
+getUrlNews Media (N na nm nb) n = if snd nm < n+1 || n < 0 then "Error de Indice" else snd $ (fst nm)!!n
+getUrlNews Baja (N na nm nb) n  = if snd nb < n+1 || n < 0 then "Error de Indice" else snd $ (fst nb)!!n
 
 
-tupla = N ([],0) ([],0) ([("CACA","WWW.CACA.COM")],1)
+
+
 
