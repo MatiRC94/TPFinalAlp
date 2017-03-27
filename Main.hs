@@ -54,6 +54,7 @@ main = do
     clearScreen
     setCursorPosition 0 0
     do info <- procesarConf     ; agregarUrlConf "http://www.ole.com.ar/rss/ultimas-noticias/" Alta (snd info) (fst info) 
+    do info <- procesarConf     ; agregarUrlConf "http://www.clarin.com/rss/lo-ultimo/" Alta (snd info) (fst info) 
     do info <- procesarConf     ;  showUrls $ snd info
     do info <- procesarConf     ;  agregarUrlConf "http://www.clarin.com/" Alta (snd info) (fst info)
     updateNews :: Priority -> Prior -> News -> IO ()

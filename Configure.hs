@@ -1,5 +1,6 @@
 module Configure where
 
+import Text.Show.Unicode(ushow)
 import System.Console.ANSI as A
 import System.IO
 import System.Directory
@@ -29,6 +30,7 @@ evalConf (Fuente c i) = setSGR [ SetColor Foreground (toColorI i) (toColor c) ]
 
 findNews  :: IO News
 findNews  = do
+              checkNews
               contN <- readFile notis           
               return $ fst $ (parse (parseNews emptyNews) contN) !! 0
 
@@ -131,6 +133,13 @@ showNews Baja  = findNews >>= \x -> mapM_ auxPrint (fst $ nb x)
 auxPrint :: (String,Url) -> IO ()
 auxPrint n = putStrLn $ fst n
 
+showNewsLink :: Priority -> IO ()
+showNewsLink Alta  = findNews >>= \x -> mapM_ auxPrint2 (fst $ na x)
+showNewsLink Media = findNews >>= \x -> mapM_ auxPrint2 (fst $ nm x)
+showNewsLink Baja  = findNews >>= \x -> mapM_ auxPrint2 (fst $ nb x)
+
+auxPrint2 :: (String,Url) -> IO ()
+auxPrint2 n = putStrLn $ snd n
 -- A partir de una Prioridad y una lista, Actualizo las noticias en el archivo de noticias 
 updateNews :: Priority -> Prior -> News -> IO ()
 updateNews Alta p n = let newslist = (a p)                          
@@ -150,28 +159,16 @@ auxParse (x:xs) =  do
                      scr2 <- auxParse xs
                      return $ scr++scr2
 
-{-
 writeNews :: Priority -> [(String,Url)] -> Prior -> News -> IO ()
 writeNews Alta l p (N na1 nm1 nb1) = do
                                         let tam = length l
-                                        writeFile cfg $ "# NA ("++ show l ++","++ show tam ++")"++"\n"++"#NM "++ show (nm (N na1 nm1 nb1)) ++"\n #NB "++ show (nb(N na1 nm1 nb1))
+                                        writeFile notis $ "# NA ("++ ushow l ++","++ ushow tam ++")"++"\n# NM "++ ushow nm1 ++"\n# NB "++ ushow nb1
 writeNews Media l p (N na1 nm1 nb1)= do
                                         let tam = length l
-                                        writeFile cfg $ "# NA "++ show (na (N na1 nm1 nb1))++","++ show tam ++")"++"\n"++"#NM "++ show (nm (N na1 nm1 nb1)) ++"\n #NB "++ show (nb(N na1 nm1 nb1))
+                                        writeFile notis $ "# NA "++ ushow na1 ++ "\n# NM ("++ ushow l ++","++ ushow tam ++")"++"\n# NB "++ ushow nb1
 writeNews Baja l p (N na1 nm1 nb1) = do
                                         let tam = length l
-                                        writeFile cfg $ "# NA ("++ show l ++","++ show tam ++")"++"\n"++"#NM "++ show (nm (N na1 nm1 nb1)) ++"\n #NB "++ show (nb(N na1 nm1 nb1))
--}
-writeNews :: Priority -> [(String,Url)] -> Prior -> News -> IO ()
-writeNews Alta l p (N na1 nm1 nb1) = do
-                                        let tam = length l
-                                        writeFile notis $ "# NA ("++ show l ++","++ show tam ++")"++"\n# NM "++ show nm1 ++"\n# NB "++ show nb1
-writeNews Media l p (N na1 nm1 nb1)= do
-                                        let tam = length l
-                                        writeFile notis $ "# NA "++ show na1 ++ "\n# NM ("++ show l ++","++ show tam ++")"++"\n# NB "++ show nb1
-writeNews Baja l p (N na1 nm1 nb1) = do
-                                        let tam = length l
-                                        writeFile notis $ "# NA "++ show na1 ++ "\n# NM "++ show nm1 ++"\n# NB ("++ show l ++","++ show tam ++")"
+                                        writeFile notis $ "# NA "++ ushow na1 ++ "\n# NM "++ ushow nm1 ++"\n# NB ("++ ushow l ++","++ ushow tam ++")"
 
 
 

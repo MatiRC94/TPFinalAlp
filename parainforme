@@ -2,3 +2,5 @@ A tener en cuenta, empece a scrapear diarios  desde la pagina principal => tarda
                    entonces scrapee simplemente los diarios con rss, intentando hacerlo con Text.XML.Cursor , pero el problema fue que algunas paginas no son XML o los cursores no entienden CDATA o versioness viejas de rss?(? VEER BIEN)
 por lo que solo  me servia para algunas paginas el scrapeo.
                    al final, tome la decision de utilizar la libreria feed, hecha especialmente para scraping de rss...
+
+http://stackoverflow.com/questions/17038947/simple-rss-downloader-in-haskell

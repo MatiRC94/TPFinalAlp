@@ -1,5 +1,9 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Scraper where
 
+
+import Codec.Binary.UTF8.String       (decodeString)
 import Control.Monad
 import Control.Applicative
 import Network.HTTP (getResponseBody,getRequest,simpleHTTP,defaultGETRequest_)
@@ -9,6 +13,7 @@ import Text.Feed.Types (Item,Feed)
 import Data.Maybe 
 import qualified Data.ByteString as B
 import Network.URI (parseURI, uriToString)
+import Text.Show.Unicode(ushow)
 
 rss  = "http://www.clarin.com/rss/lo-ultimo/"
 rss2 = "http://www.laizquierdadiario.com/spip.php?page=backend_portada"
@@ -57,10 +62,10 @@ extract _ = error "Error en la funcion getTuples"
 getResponseRss :: String -> IO String
 getResponseRss s = do 
                      s1 <- simpleHTTP (getRequest s)
-                     getResponseBody s1
+                     getResponseBody s1 >>= \x -> return $ decodeString x
 
 printTuples :: [(String, String)] -> IO ()
-printTuples s = mapM_ (putStrLn.show) s                 
+printTuples s = mapM_ (putStrLn.ushow) s                 
 
 --Funcion para comprobar el scraping
 probando :: String -> IO ()

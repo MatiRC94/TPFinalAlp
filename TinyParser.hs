@@ -245,7 +245,6 @@ auxN :: Parser Char
 auxN =   alphanum 
          <|> char '.'
          <|> char '/'
-         <|> char '\\'
          <|> char ':'
          <|> char '_'
          <|> char '-'
@@ -254,7 +253,7 @@ auxN =   alphanum
          <|> char '#'
          <|> char '@'
          <|> char '&'
-         <|> char '\''
+         <|> char '\''      --apostrofe
          <|> char '+'
          <|> char '%'
          <|> char '!'
@@ -262,13 +261,15 @@ auxN =   alphanum
          <|> latin1
          <|> upper
          <|> space'
-         <|> (do char '\"'
-                 (alphanum <|> upper <|> latin1 <|> char '.' <|> latin1 <|> ( do char '\"' ; char' ',' )))
-
-
+         <|> (do 
+                 char '\"'
+                 (alphanum <|> upper <|> latin1 <|> char '.' <|> latin1 <|> ( do char '\"' ; char' ',' ))) 
+         <|> (do char '\\'
+                 char '\"')
 latin1 :: Parser Char
 latin1 = (char '®' <|> char '¡' <|> char '¿' <|> char '°' <|> char 'º' <|> char 'Á' <|> char 'É' <|> char 'Í' <|> char 'Ó' <|> char 'Ú' <|> char 'Ü' <|> char 'Ñ' <|> char 'ñ' <|> char 'á' <|> char 'é' <|> char 'í' <|> char 'ó' <|> char 'ú' <|> char 'ü' )
 
+--"("\"Lo hicimos una vez...\"","http://www.ole.com.ar/futbol-internacional/eliminatorias/hacer_0_1766823451.html")"
 
 --"# NA ([(\"choque\",\"www.choque.com\")],1) \n# NM ([],0) \n # NB ([],0)"
 
@@ -277,7 +278,7 @@ latin1 = (char '®' <|> char '¡' <|> char '¿' <|> char '°' <|> char 'º' <|> 
  n -> (NA | NM | NB ) parseoT
  parseoT -> "(" tuplas ")"
  tuplas -> "[" tuplas' "]" "," Int  
- tuplas' -> "(" "\"" string "\"" "," "\"" string "\"" ")" ( "," tupla' | E ) | E
+ tuplas' -> "(" "\"" auxN "\"" "," "\"" auxU "\"" ")" ( "," tupla' | E ) | E
  comment -> alphanumsYspaces num#
 -}
 
