@@ -1,19 +1,14 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Scraper where
 
 
 import Codec.Binary.UTF8.String       (decodeString)
-import Control.Monad
-import Control.Applicative
 import Network.HTTP (getResponseBody,getRequest,simpleHTTP,defaultGETRequest_)
 import Text.Feed.Import (parseFeedString)
 import Text.Feed.Query (feedItems,getItemTitle,getItemLink)
 import Text.Feed.Types (Item,Feed)
-import Data.Maybe 
-import qualified Data.ByteString as B
+import Data.Maybe (Maybe)
 import Network.URI (parseURI, uriToString)
-import Text.Show.Unicode(ushow)
+import Text.Show.Unicode (ushow)
 
 rss  = "http://www.clarin.com/rss/lo-ultimo/"
 rss2 = "http://www.laizquierdadiario.com/spip.php?page=backend_portada"

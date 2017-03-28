@@ -1,4 +1,3 @@
-
 module Dataparalelo where
 
 import Network.HTTP (getRequest,simpleHTTP,Response)
@@ -26,18 +25,13 @@ data News = N {  na :: ([(String,Url)],Int)
 
 
 
---TODO LO RELACIONADO A LA DEFINICION DE DATOS Y ESTRUCT
 
-colores =["0-Negro","1-Rojo","2-Verde","3-Amarillo","4-Azul","5-Magenta","6-Cyan","7-Blanco"]
-intensidad = ["0-Opaco","1-Vivido"]
+addUrl' :: Url -> Priority -> Prior -> IO Prior
+addUrl' s Alta (P a m b)  = return $ P (union [s] a) m b
+addUrl' s Media (P a m b) = return $ P a (union [s] m) b
+addUrl' s Baja (P a m b)  = return $ P a m (union [s] b)
 
-
-addUrl' :: Url -> Priority -> Prior -> Prior
-addUrl' s Alta (P a m b)  = P (union [s] a) m b
-addUrl' s Media (P a m b) = P a (union [s] m) b
-addUrl' s Baja (P a m b)  = P a m (union [s] b)
-
-addUrl :: Url -> Priority -> Prior -> Prior
+addUrl :: Url -> Priority -> Prior -> IO Prior
 addUrl s Alta (P a m b) = addUrl' s Alta $ removeUrl s (P a m b)
 addUrl s Media (P a m b) = addUrl' s Media $ removeUrl s (P a m b)
 addUrl s Baja (P a m b) = addUrl' s Baja $ removeUrl s (P a m b)
@@ -48,11 +42,11 @@ removeUrl s (P a m b)  = P (delete s a) (delete s m) (delete s b)
 
 showUrls :: Prior -> IO ()
 showUrls p = do
-               putStrLn "Urls de prioridad Alta:  "
+               putStrLn "Rss de prioridad Alta:  "
                mapM_ putStrLn ( a p )
-               putStrLn "Urls de prioridad Media: "
+               putStrLn "Rss de prioridad Media: "
                mapM_ putStrLn ( m p )
-               putStrLn "Urls de prioridad Baja:  "
+               putStrLn "Rss de prioridad Baja:  "
                mapM_ putStrLn ( b p )
 
 checkUrl :: Url -> IO ()

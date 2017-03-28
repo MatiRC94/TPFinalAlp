@@ -266,6 +266,7 @@ auxN =   alphanum
                  (alphanum <|> upper <|> latin1 <|> char '.' <|> latin1 <|> ( do char '\"' ; char' ',' ))) 
          <|> (do char '\\'
                  char '\"')
+
 latin1 :: Parser Char
 latin1 = (char '®' <|> char '¡' <|> char '¿' <|> char '°' <|> char 'º' <|> char 'Á' <|> char 'É' <|> char 'Í' <|> char 'Ó' <|> char 'Ú' <|> char 'Ü' <|> char 'Ñ' <|> char 'ñ' <|> char 'á' <|> char 'é' <|> char 'í' <|> char 'ó' <|> char 'ú' <|> char 'ü' )
 

@@ -1,11 +1,11 @@
 module Configure where
 
 import Text.Show.Unicode(ushow)
-import System.Console.ANSI as A
-import System.IO
-import System.Directory
+import System.Console.ANSI as A (setSGR, SGR(..), ColorIntensity(..), ColorIntensity(..),ConsoleLayer (..), Color, clearScreen )
+import System.IO (putStrLn, getChar, readFile, writeFile)
+import System.Directory (doesFileExist)
 import Data.Char (digitToInt)
---import Data.Text.IO (putStrLn)
+
 import Parsing 
 import Dataparalelo as D
 import TinyParser
@@ -15,7 +15,8 @@ initialNews = "# NA ([],0) \n# NM ([],0) \n# NB ([],0)"
 initialConfig = "#Fondo 4 0 \n#Fuente 3 1 \n#P [] [] []"
 emptyData = D.P [] [] []
 emptyNews = (N ([],0) ([],0) ([],0))
-
+colores =["0- Negro","1- Rojo","2- Verde","3- Amarillo","4- Azul","5- Magenta","6- Cyan","7- Blanco"]
+intensidad = ["0- Opaco","1- Vivido"]
 cfg = "Config/Config.cfg"
 notis="Config/Noticias.cfg"
 
@@ -77,33 +78,30 @@ estilo p = do
 elegirColor :: Prior -> IO ()
 elegirColor p = do
                      putStrLn "Color de Fondo:"
-                     c1  <- listaColores
-                     putStr  "\n"
+                     c1  <- listarOpc colores
+                   --  putStr  "\n"
+                     clearScreen
                      putStrLn "Intensidad del color:"
-                     i1 <- intenSidad
-                     putStr  "\n"
+                     i1 <- listarOpc intensidad
+                   --  putStr  "\n"
+                     clearScreen
                      putStrLn "Color de Fuente:"
-                     c2  <- listaColores
-                     putStr  "\n"
+                     c2  <- listarOpc colores
+                   -- putStr  "\n"
+                     clearScreen
                      putStrLn "Intensidad del color:"
-                     i2 <- intenSidad
-                     putStr  "\n" 
+                     i2 <- listarOpc intensidad
+                   --  putStr  "\n" 
+                     clearScreen
                      changeConfigCol p [digitToInt(c1),digitToInt(i1),digitToInt(c2),digitToInt(i2)] 
 
-listaColores :: IO Char
-listaColores = do 
-                mapM_ putStrLn colores
+listarOpc :: [String] -> IO Char
+listarOpc x = do 
+                mapM_ putStrLn x
                 putStr  "\n"
                 getChar
 
 
-
-intenSidad :: IO Char
-intenSidad = do
-                mapM_ putStrLn intensidad
-                putStr  "\n"
-                getChar
-     
 
 toColor:: Int -> Color
 toColor = toEnum
@@ -118,12 +116,16 @@ changeConfigCol (D.P a m b) c = do
                                   procesarConf
                                   return ()
 
-agregarUrlConf :: Url -> Priority -> Prior -> [Config] -> IO () 
-agregarUrlConf url p pr conf = do
-                                 writeFile cfg $ "#"++show (conf!!0) ++"\n"++"#"++ show (conf!!1) ++"\n"++"#P "++show(a newUrl) ++ show (m newUrl)++show (b newUrl)
-                                 procesarConf
-                                 return ()
-                                 where newUrl = (addUrl url p pr)
+agregarUrlConf' :: Url -> Priority -> Prior -> [Config] -> IO () 
+agregarUrlConf' url p pr conf = do
+                                  newUrl <- addUrl url p pr
+                                  writeFile cfg $ "#"++show (conf!!0) ++"\n"++"#"++ show (conf!!1) ++"\n"++"#P "++show(a newUrl) ++ show (m newUrl)++show (b newUrl)
+                                  procesarConf
+                                  return ()
+
+agregarUrlConf :: Url -> Priority -> ([Config],Prior) -> IO () 
+agregarUrlConf u pr (xs,p) = agregarUrlConf' u pr p xs
+
 
 showNews :: Priority -> IO ()
 showNews Alta  = findNews >>= \x -> mapM_ auxPrint (fst $ na x)
