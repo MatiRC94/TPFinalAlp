@@ -4,7 +4,7 @@ module Scraper where
 import Codec.Binary.UTF8.String       (decodeString)
 import Network.HTTP (getResponseBody,getRequest,simpleHTTP,defaultGETRequest_)
 import Text.Feed.Import (parseFeedString)
-import Text.Feed.Query (feedItems,getItemTitle,getItemLink)
+import Text.Feed.Query (feedItems,getItemTitle,getItemLink,getFeedTitle)
 import Text.Feed.Types (Item,Feed)
 import Data.Maybe (Maybe)
 import Network.URI (parseURI, uriToString)
@@ -69,8 +69,4 @@ probando rss = getTuples rss >>= \x -> printTuples $ extractData x
 
 scrap :: String -> IO [(String,String)]
 scrap rss = getTuples rss >>= \x -> return $ extractData x
-
-
-
-
 

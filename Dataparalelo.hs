@@ -32,12 +32,12 @@ addUrl' s Media (P a m b) = return $ P a (union [s] m) b
 addUrl' s Baja (P a m b)  = return $ P a m (union [s] b)
 
 addUrl :: Url -> Priority -> Prior -> IO Prior
-addUrl s Alta (P a m b) = addUrl' s Alta $ removeUrl s (P a m b)
-addUrl s Media (P a m b) = addUrl' s Media $ removeUrl s (P a m b)
-addUrl s Baja (P a m b) = addUrl' s Baja $ removeUrl s (P a m b)
+addUrl s Alta (P a m b) =  removeUrl s (P a m b) >>= addUrl' s Alta
+addUrl s Media (P a m b) = removeUrl s (P a m b) >>= addUrl' s Media 
+addUrl s Baja (P a m b) =  removeUrl s (P a m b) >>= addUrl' s Baja 
 
-removeUrl :: Url -> Prior -> Prior
-removeUrl s (P a m b)  = P (delete s a) (delete s m) (delete s b)
+removeUrl :: Url -> Prior -> IO Prior
+removeUrl s (P a m b)  = return $ P (delete s a) (delete s m) (delete s b)
 
 
 showUrls :: Prior -> IO ()

@@ -5,6 +5,7 @@ import System.Console.ANSI as A (setSGR, SGR(..), ColorIntensity(..), ColorInten
 import System.IO (putStrLn, getChar, readFile, writeFile)
 import System.Directory (doesFileExist)
 import Data.Char (digitToInt)
+import System.IO (hSetBuffering, stdin, BufferMode(NoBuffering))
 
 import Parsing 
 import Dataparalelo as D
@@ -23,7 +24,7 @@ notis="Config/Noticias.cfg"
 -- TODO funcion estilo de dataparalelo aca, que modifique Config.cfg
 -- TODO add y remove url debe estar aca y modificar url.cfg
 --- ACA ESTA TODO LO QUE VENGA EN RELACION A LOS ARCHIVOS.CFG
-
+-- TODO SACAR URL removerUrlConf 
 
 evalConf :: Config -> IO ()
 evalConf (Fondo c i)  = setSGR [ SetColor Background (toColorI i) (toColor c) ]
@@ -99,9 +100,12 @@ listarOpc :: [String] -> IO Char
 listarOpc x = do 
                 mapM_ putStrLn x
                 putStr  "\n"
+                noBuffering
                 getChar
 
-
+--Funcion para no tener buffer de stdin y no tener que presionar entrer con getLine
+noBuffering :: IO ()
+noBuffering = hSetBuffering stdin NoBuffering
 
 toColor:: Int -> Color
 toColor = toEnum
@@ -127,10 +131,23 @@ agregarUrlConf :: Url -> Priority -> ([Config],Prior) -> IO ()
 agregarUrlConf u pr (xs,p) = agregarUrlConf' u pr p xs
 
 
+removerUrlConf' ::Url -> Prior -> [Config] -> IO () 
+removerUrlConf' url pr conf = do
+                                  newUrl <- removeUrl url pr
+                                  writeFile cfg $ "#"++show (conf!!0) ++"\n"++"#"++ show (conf!!1) ++"\n"++"#P "++show(a newUrl) ++ show (m newUrl)++show (b newUrl)
+                                  procesarConf
+                                  return ()
+
+removerUrlConf :: Url -> ([Config],Prior) -> IO () 
+removerUrlConf u (xs,p) = removerUrlConf' u p xs
+
 showNews :: Priority -> IO ()
-showNews Alta  = findNews >>= \x -> mapM_ auxPrint (fst $ na x)
-showNews Media = findNews >>= \x -> mapM_ auxPrint (fst $ nm x)
-showNews Baja  = findNews >>= \x -> mapM_ auxPrint (fst $ nb x)
+showNews Alta  = findNews >>= \x -> let tupla = na x
+                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (fst $ tupla)                                    
+showNews Media = findNews >>= \x -> let tupla = nm x
+                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (fst $ tupla)
+showNews Baja  = findNews >>= \x -> let tupla = nb x
+                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (fst $ tupla)
 --([(String,Url)],Int)
 auxPrint :: (String,Url) -> IO ()
 auxPrint n = putStrLn $ fst n
@@ -154,12 +171,14 @@ updateNews Baja p n = let newslist = (b p)
                           in do 
                                if (length newslist == 0) then putStrLn "No hay ningun diario en la lista." else do {scrapeo <- auxParse newslist ; writeNews Baja scrapeo p n}
 
+
+--Escribe las Noticias junto con su Link en el archivo Noticias.cfg
 auxParse :: [Url] -> IO [(String, Url)]
 auxParse []   = return []  
 auxParse (x:xs) =  do 
                      scr  <- scrap x
                      scr2 <- auxParse xs
-                     return $ scr++scr2
+                     return $ [(x,"Diario")]++scr++scr2
 
 writeNews :: Priority -> [(String,Url)] -> Prior -> News -> IO ()
 writeNews Alta l p (N na1 nm1 nb1) = do
