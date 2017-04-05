@@ -28,7 +28,7 @@ font = do
                
  {-                  
 conf  :: Parser Config
-conf  = (do fondo  <- back
+conf  = (do fondo  <- fond
             return fondo)
          <|> do fuente <- font 
                 return $ fuente         
@@ -146,7 +146,14 @@ reemp (Fuente a b) (x:xs) = case x of
 
 
 
+--parse (p1 [] (D.P [] [] [])) "#P [] [\"http://www.lacapital.com\",\"http://www.rosario3.com\"] [] caca \n caca \n #Fondo 0 0 \n #Fuente 7 1 caca"
 
+--parse (p1 [] (D.P [] [] [])) "#Fondo 4 0 \n#Fuente 3 1\n#P [http://www.clarin.com/,http://www.lacapital.com] [] []"
+
+
+--print ( a(fst ((parse urlP  ( "P [\"hola][][]") !! 0) ) ) )
+
+-- " #Fondo 4 0 \n#Fuente 3 1 \n #P [\"http://www.lacapital.com\"][][] "
 
 
 
@@ -263,8 +270,9 @@ auxN =   alphanum
 latin1 :: Parser Char
 latin1 = (char '®' <|> char '¡' <|> char '¿' <|> char '°' <|> char 'º' <|> char 'Á' <|> char 'É' <|> char 'Í' <|> char 'Ó' <|> char 'Ú' <|> char 'Ü' <|> char 'Ñ' <|> char 'ñ' <|> char 'á' <|> char 'é' <|> char 'í' <|> char 'ó' <|> char 'ú' <|> char 'ü' )
 
+--"("\"Lo hicimos una vez...\"","http://www.ole.com.ar/futbol-internacional/eliminatorias/hacer_0_1766823451.html")"
 
-
+--"# NA ([(\"choque\",\"www.choque.com\")],1) \n# NM ([],0) \n # NB ([],0)"
 
 {-  
  num# -> # n | comment
@@ -275,10 +283,7 @@ latin1 = (char '®' <|> char '¡' <|> char '¿' <|> char '°' <|> char 'º' <|> 
  comment -> alphanumsYspaces num#
 -}
 
-
-
-
-
+-- parse (parseNews (N ([],0) ([],0) ([],0) )) "# NA ([(\"\"Le pido a la gobernadora Vidal que recorra los hospitales sin aviso\"\",\"http://www.clarin.com/cartas-al-pais/pido-gobernadora-vidal-recorra-hospitales-aviso_0_HkJtghb3g.html\"),(\"\"Le pido a la gobernadora Vidal que recorra los hospitales sin aviso\"\",\"http://www.clarin.com/cartas-al-pais/pido-gobernadora-vidal-recorra-hospitales-aviso_0_HkJtghb3g.html\")],2) \n# NM ([],0) \n# NB ([],0)"
 
 
 

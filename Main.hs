@@ -98,10 +98,10 @@ verNoticias p n = do
                      case c of
                          '1' -> updateNews Alta p n >>= \x -> case x of
                                                                    1 -> volverMenu
-                                                                   0-> showNews Alta >> irUrl Alta n >> volverMenu
+                                                                   0 -> showNews Alta >> irUrl Alta n >> volverMenu
                          '2' -> updateNews Media p n >>= \x -> case x of
                                                                     1 -> volverMenu
-                                                                    0-> showNews Media >> irUrl Media n >> volverMenu
+                                                                    0 -> showNews Media >> irUrl Media n >> volverMenu
                          '3' -> updateNews Baja p n >>= \x -> case x of
                                                                    1 -> volverMenu
                                                                    0 -> showNews Baja >> irUrl Baja n >> volverMenu
@@ -136,8 +136,9 @@ infoRss pr conf = do
 eliminarRss :: Prior -> [Config] -> IO ()
 eliminarRss pr conf = putStrLn "Ingrese Link RSS:" >> 
                       buffering >> 
-                      getLine >>= \url -> removerUrlConf url (conf,pr) >>   
-                      if elem url (a pr) || elem url (m pr) || elem url (b pr) then putStrLn $ url++"    Removido de la lista " else putStrLn "Url Invalida" >> eliminarRss pr conf
+                      getLine >>= \url -> if elem url (a pr) || elem url (m pr) || elem url (b pr) then removerUrlConf url (conf,pr) >>  putStrLn ( url++"    Removido de la lista ") else putStrLn "Url Invalida" >> eliminarRss pr conf
+                      
+  
 
 tinyParser :: String -> Either (IO ()) Int
 tinyParser s = case (parse integer s) of

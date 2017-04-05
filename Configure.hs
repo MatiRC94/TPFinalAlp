@@ -3,7 +3,7 @@ module Configure where
 import Text.Show.Unicode(ushow)
 import System.Console.ANSI as A (setSGR, SGR(..), ColorIntensity(..), ColorIntensity(..),ConsoleLayer (..), Color, clearScreen )
 import System.IO (putStrLn, getChar, readFile, writeFile)
-import System.Directory (doesFileExist)
+import System.Directory (doesFileExist,renameFile,removeFile)
 import Data.Char (digitToInt)
 import System.IO (hSetBuffering, stdin, BufferMode(NoBuffering))
 
@@ -20,8 +20,8 @@ colores =["0- Negro","1- Rojo","2- Verde","3- Amarillo","4- Azul","5- Magenta","
 intensidad = ["0- Opaco","1- Vivido"]
 cfg = "Config/Config.cfg"
 notis="Config/Noticias.cfg"
-cfgtemp = "Config/Config.cfg"
-notistemp="Config/Noticias.cfg"
+cfgtemp = "Config/ConfigTemp.cfg"
+notistemp="Config/NoticiasTemps.cfg"
 --- ACA ESTA TODO LO QUE VENGA EN RELACION A LOS ARCHIVOS.CFG
 
 
@@ -46,12 +46,34 @@ checkCfg = do
              bool <- doesFileExist cfg
              if bool then return () else defaultConfig
 
+-- Remueve si existe el archivo, la string es FilePath
+removingFiles :: String -> IO ()
+removingFiles s = do 
+                    bool <- doesFileExist notis
+                    if bool then removeFile s else return ()
+
+--Para una escritura segura de las config
+secCfg :: IO ()
+secCfg = do
+             removingFiles cfg
+             renameFile cfgtemp cfg
+
+--Para una escritura segura de las noticias
+secNotis :: IO ()
+secNotis = do 
+             removingFiles notis
+             renameFile notistemp notis
+
+
 defaultNews :: IO ()
-defaultNews = writeFile notis initialNews
+defaultNews = do
+                 writeFile notistemp initialNews
+                 secNotis
 
 defaultConfig :: IO ()
-defaultConfig = writeFile cfg initialConfig
-
+defaultConfig = do 
+                 writeFile cfgtemp initialConfig
+                 secCfg
 
 restoreDefault :: IO ()
 restoreDefault = do
@@ -115,14 +137,16 @@ toColorI = toEnum
 
 changeConfigCol :: Prior -> [Int] -> IO ()
 changeConfigCol (D.P a m b) c = do
-                                  writeFile cfg $ "#Fondo "++ show (c!!0) ++" "++ show (c!!1) ++"\n"++"#Fuente "++ show (c!!2) ++" "++ show (c!!3) ++"\n"++"#P "++show a  ++ show m ++show b
+                                  writeFile cfgtemp $ "#Fondo "++ show (c!!0) ++" "++ show (c!!1) ++"\n"++"#Fuente "++ show (c!!2) ++" "++ show (c!!3) ++"\n"++"#P "++show a  ++ show m ++show b
+                                  secCfg
                                   procesarConf
                                   return ()
 
 agregarUrlConf' :: Url -> Priority -> Prior -> [Config] -> IO () 
 agregarUrlConf' url p pr conf = do
                                   newUrl <- addUrl url p pr
-                                  writeFile cfg $ "#"++show (conf!!0) ++"\n"++"#"++ show (conf!!1) ++"\n"++"#P "++show(a newUrl) ++ show (m newUrl)++show (b newUrl)
+                                  writeFile cfgtemp $ "#"++show (conf!!0) ++"\n"++"#"++ show (conf!!1) ++"\n"++"#P "++show(a newUrl) ++ show (m newUrl)++show (b newUrl)
+                                  secCfg
                                   procesarConf
                                   return ()
 
@@ -133,7 +157,8 @@ agregarUrlConf u pr (xs,p) = agregarUrlConf' u pr p xs
 removerUrlConf' ::Url -> Prior -> [Config] -> IO () 
 removerUrlConf' url pr conf = do
                                   newUrl <- removeUrl url pr
-                                  writeFile cfg $ "#"++show (conf!!0) ++"\n"++"#"++ show (conf!!1) ++"\n"++"#P "++show(a newUrl) ++ show (m newUrl)++show (b newUrl)
+                                  writeFile cfgtemp $ "#"++show (conf!!0) ++"\n"++"#"++ show (conf!!1) ++"\n"++"#P "++show(a newUrl) ++ show (m newUrl)++show (b newUrl)
+                                  secCfg
                                   procesarConf
                                   return ()
 
@@ -204,13 +229,13 @@ auxParse (x:xs) =  do
 writeNews :: Priority -> [(String,Url)] -> Prior -> News -> IO ()
 writeNews Alta l p (N na1 nm1 nb1) = do
                                         let tam = length l
-                                        writeFile notis $ "# NA ("++ ushow l ++","++ ushow tam ++")"++"\n# NM "++ ushow nm1 ++"\n# NB "++ ushow nb1
+                                        writeFile notistemp ( "# NA ("++ ushow l ++","++ ushow tam ++")"++"\n# NM "++ ushow nm1 ++"\n# NB "++ ushow nb1) >> secNotis
 writeNews Media l p (N na1 nm1 nb1)= do
                                         let tam = length l
-                                        writeFile notis $ "# NA "++ ushow na1 ++ "\n# NM ("++ ushow l ++","++ ushow tam ++")"++"\n# NB "++ ushow nb1
+                                        writeFile notistemp ( "# NA "++ ushow na1 ++ "\n# NM ("++ ushow l ++","++ ushow tam ++")"++"\n# NB "++ ushow nb1) >> secNotis
 writeNews Baja l p (N na1 nm1 nb1) = do
                                         let tam = length l
-                                        writeFile notis $ "# NA "++ ushow na1 ++ "\n# NM "++ ushow nm1 ++"\n# NB ("++ ushow l ++","++ ushow tam ++")"
+                                        writeFile notistemp ( "# NA "++ ushow na1 ++ "\n# NM "++ ushow nm1 ++"\n# NB ("++ ushow l ++","++ ushow tam ++")") >> secNotis
 
 
 
