@@ -9,7 +9,7 @@ import System.IO (hSetBuffering, stdin, BufferMode(NoBuffering))
 
 import Parsing 
 import Dataparalelo as D
-import TinyParser
+import Parser
 import Scraper
 
 initialNews = "# NA ([],0) \n# NM ([],0) \n# NB ([],0)"
@@ -20,16 +20,16 @@ colores =["0- Negro","1- Rojo","2- Verde","3- Amarillo","4- Azul","5- Magenta","
 intensidad = ["0- Opaco","1- Vivido"]
 cfg = "Config/Config.cfg"
 notis="Config/Noticias.cfg"
-
--- TODO funcion estilo de dataparalelo aca, que modifique Config.cfg
--- TODO add y remove url debe estar aca y modificar url.cfg
+cfgtemp = "Config/Config.cfg"
+notistemp="Config/Noticias.cfg"
 --- ACA ESTA TODO LO QUE VENGA EN RELACION A LOS ARCHIVOS.CFG
--- TODO SACAR URL removerUrlConf 
+
 
 evalConf :: Config -> IO ()
 evalConf (Fondo c i)  = setSGR [ SetColor Background (toColorI i) (toColor c) ]
 evalConf (Fuente c i) = setSGR [ SetColor Foreground (toColorI i) (toColor c) ]
 
+--Parsea las noticias en el archivo de noticias
 findNews  :: IO News
 findNews  = do
               checkNews
@@ -47,23 +47,22 @@ checkCfg = do
              if bool then return () else defaultConfig
 
 defaultNews :: IO ()
-defaultNews = do 
-                writeFile notis initialNews
+defaultNews = writeFile notis initialNews
 
 defaultConfig :: IO ()
-defaultConfig = do 
-                  writeFile cfg initialConfig
-                  writeFile notis initialNews
+defaultConfig = writeFile cfg initialConfig
+
 
 restoreDefault :: IO ()
 restoreDefault = do
                     defaultConfig
                     defaultNews
-                    cont <- readFile cfg
-                    procesarConf 
                     clearScreen
+                    procesarConf
+                    clearScreen 
                     return ()                    
 
+--Ejecuta la configuracion grafica
 procesarConf :: IO ([Config],Prior)
 procesarConf = do
                   cont <- readFile cfg
@@ -140,7 +139,7 @@ removerUrlConf' url pr conf = do
 
 removerUrlConf :: Url -> ([Config],Prior) -> IO () 
 removerUrlConf u (xs,p) = removerUrlConf' u p xs
-
+{-
 showNews :: Priority -> IO ()
 showNews Alta  = findNews >>= \x -> let tupla = na x
                                     in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (fst $ tupla)                                    
@@ -148,9 +147,25 @@ showNews Media = findNews >>= \x -> let tupla = nm x
                                     in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (fst $ tupla)
 showNews Baja  = findNews >>= \x -> let tupla = nb x
                                     in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (fst $ tupla)
+-}
+showNews :: Priority -> IO ()
+showNews Alta  = findNews >>= \x -> let tupla = na x
+                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (zip [0..] (fst tupla))                                    
+showNews Media = findNews >>= \x -> let tupla = nm x
+                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (zip [0..] (fst tupla))
+showNews Baja  = findNews >>= \x -> let tupla = nb x
+                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (zip [0..] (fst tupla))
+
+--([(String,Url)],Int)
+auxPrint :: (Int,(String,Url)) -> IO ()
+auxPrint (a,b) = putStrLn $ (ushow a++"- " ++ fst b)
+
+{-
 --([(String,Url)],Int)
 auxPrint :: (String,Url) -> IO ()
 auxPrint n = putStrLn $ fst n
+-}
+
 
 showNewsLink :: Priority -> IO ()
 showNewsLink Alta  = findNews >>= \x -> mapM_ auxPrint2 (fst $ na x)
@@ -159,17 +174,21 @@ showNewsLink Baja  = findNews >>= \x -> mapM_ auxPrint2 (fst $ nb x)
 
 auxPrint2 :: (String,Url) -> IO ()
 auxPrint2 n = putStrLn $ snd n
+
+
+
+
 -- A partir de una Prioridad y una lista, Actualizo las noticias en el archivo de noticias 
-updateNews :: Priority -> Prior -> News -> IO ()
+updateNews :: Priority -> Prior -> News -> IO Int
 updateNews Alta p n = let newslist = (a p)                          
                           in do 
-                               if (length newslist == 0) then putStrLn "No hay ningun diario en la lista." else do {scrapeo <- auxParse newslist ; writeNews Alta scrapeo p n}
+                               if (length newslist == 0) then putStrLn "No hay ningun diario en la lista." >> return 1 else do {scrapeo <- auxParse newslist ; writeNews Alta scrapeo p n ; return 0}
 updateNews Media p n= let newslist = (m p)                          
                           in do 
-                               if (length newslist == 0) then putStrLn "No hay ningun diario en la lista." else do {scrapeo <- auxParse newslist ; writeNews Media scrapeo p n}
+                               if (length newslist == 0) then putStrLn "No hay ningun diario en la lista." >> return 1 else do {scrapeo <- auxParse newslist ; writeNews Media scrapeo p n ; return 0}
 updateNews Baja p n = let newslist = (b p)                          
                           in do 
-                               if (length newslist == 0) then putStrLn "No hay ningun diario en la lista." else do {scrapeo <- auxParse newslist ; writeNews Baja scrapeo p n}
+                               if (length newslist == 0) then putStrLn "No hay ningun diario en la lista." >> return 1 else do {scrapeo <- auxParse newslist ; writeNews Baja scrapeo p n ; return 0}
 
 
 --Escribe las Noticias junto con su Link en el archivo Noticias.cfg
@@ -178,7 +197,9 @@ auxParse []   = return []
 auxParse (x:xs) =  do 
                      scr  <- scrap x
                      scr2 <- auxParse xs
-                     return $ [(x,"Diario")]++scr++scr2
+                     return $ [(x,x)]++scr++scr2
+
+-- Escribe en el archivo de configuracion las nuevas noticias
 
 writeNews :: Priority -> [(String,Url)] -> Prior -> News -> IO ()
 writeNews Alta l p (N na1 nm1 nb1) = do

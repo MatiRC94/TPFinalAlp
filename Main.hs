@@ -6,20 +6,24 @@ import System.Console.Terminal.Size -- (size, Window)
 import System.Exit (exitSuccess) 
 import Data.Char (digitToInt)
 import Data.Maybe (fromJust)
+import System.Process (runCommand, ProcessHandle)
 
+import Parsing (parse, integer)
 import Dataparalelo
 import Configure
 
-opciones = ["1- Ver Noticias", "2- Agregar Links RSS", "3- Info RSS", "4- Opciones Graficas", "0- Salir","\n\nCualquier Otra tecla es Erronea"]
-opRss = ["1- Ver Status Rss", "2- Eliminar RSS", "3- Agregar Links RSS","0- Salir"]
-prioridad = ["1- Alta", "2- Media", "3- Baja", "0- Salir"]
+opciones = ["1- Ver Noticias", "2- Agregar Links RSS", "3- Info RSS", "4- Opciones Graficas", "q- Salir","\n\nCualquier Otra tecla es Erronea"]
+opRss = ["1- Ver Status Rss", "2- Eliminar RSS", "3- Agregar Links RSS","q- Salir"]
+prioridad = ["1- Alta", "2- Media", "3- Baja", "q- Salir"]
 titulo = "Resumidor de Noticias"
 bienvenida = "Bienvenido al Visor de noticias"
 
 
 --TODO VER Q PASA SI AGREGO UNA URL INCORRECTA Y COMO MANEJARLO
 --TODO Bajar subir con flechitas
--- TODO SACAR URL removerUrlConf  en Configure.hs
+--TODO LA PRIMERA VEZ HACE ERROR DE LINK
+--TODO Opciones graficas
+
 
 
 --Funcion para cargar el buffer y poder aceptar backspaces con getLine
@@ -46,11 +50,11 @@ menu tup = do
              putStrLn "Elija alguna Accion\n"
              c <- listarOpc opciones
              case c of
-                  '1' -> findNews >>= updateNews Alta (snd tup) >>verNoticias
+                  '1' -> findNews >>= verNoticias (snd tup)
                   '2' -> agregarLinks tup
                   '3' -> infoRss (snd tup) (fst tup)
                   '4' -> putStrLn "4"
-                  '0' -> exitSuccess
+                  'q' -> exitSuccess
                   _   -> putStrLn "\nTecla incorrecta"
              tup2 <- procesarConf
              cursorStart
@@ -59,13 +63,13 @@ menu tup = do
 volverMenu :: IO ()
 volverMenu = do
                         putStrLn "\n"
-                        putStrLn "\n\nPresione Cualquier tecla para volver al menu principal\n0- Salir "
+                        putStrLn "\n\nPresione Cualquier tecla para volver al menu principal\nq- Salir "
                         noBuffering
                         c <- getChar
                         case c of
 --                            'w' -> scrollPageUp 1 >> volverMenu
   --                          's' -> scrollPageDown 1 >> volverMenu
-                            '0' -> exitSuccess
+                            'q' -> exitSuccess
                             _   -> return ()
 
 agregarLinks :: ([Config],Prior) -> IO ()
@@ -82,21 +86,40 @@ agregarLinks tup = do
                          '1' -> agregarUrlConf url Alta tup >> putStrLn  (url++" Agregado") >> volverMenu
                          '2' -> agregarUrlConf url Media tup >> putStrLn (url++" Agregado") >> volverMenu
                          '3' -> agregarUrlConf url Baja tup >> putStrLn (url++" Agregado") >> volverMenu
-                         '0' -> exitSuccess
+                         'q' -> exitSuccess
                          _   -> putStrLn "Tecla incorrecta"
 
-verNoticias :: IO ()
-verNoticias = do 
-                 cursorStart
-                 putStrLn "Noticias de que prioridad desea ver?"                    
-                 c <- listarOpc prioridad
-                 cursorStart
-                 case c of
-                     '1' -> showNews Alta >> volverMenu
-                     '2' -> showNews Media >> volverMenu
-                     '3' -> showNews Baja >> volverMenu
-                     '0' -> exitSuccess
-                     _   -> putStrLn "Tecla incorrecta"
+verNoticias :: Prior-> News -> IO ()
+verNoticias p n = do 
+                     cursorStart
+                     putStrLn "Noticias de que prioridad desea ver?"                    
+                     c <- listarOpc prioridad
+                     cursorStart
+                     case c of
+                         '1' -> updateNews Alta p n >>= \x -> case x of
+                                                                   1 -> volverMenu
+                                                                   0-> showNews Alta >> irUrl Alta n >> volverMenu
+                         '2' -> updateNews Media p n >>= \x -> case x of
+                                                                    1 -> volverMenu
+                                                                    0-> showNews Media >> irUrl Media n >> volverMenu
+                         '3' -> updateNews Baja p n >>= \x -> case x of
+                                                                   1 -> volverMenu
+                                                                   0 -> showNews Baja >> irUrl Baja n >> volverMenu
+                         'q' -> exitSuccess
+                         _   -> putStrLn "Tecla incorrecta"
+
+irUrl :: Priority -> News -> IO ProcessHandle
+irUrl p n = do
+                 putStrLn "\n"
+                 putStrLn "\n\nElija una Noticia para Abrir en Firefox"
+                 buffering
+                 c <- getLine
+                 case tinyParser c of
+                      Left x -> irUrl p n
+                      Right i -> runCommand $ "firefox "++getUrlNews p n i
+                 
+                
+
 
 infoRss :: Prior -> [Config] -> IO ()
 infoRss pr conf = do
@@ -115,6 +138,15 @@ eliminarRss pr conf = putStrLn "Ingrese Link RSS:" >>
                       buffering >> 
                       getLine >>= \url -> removerUrlConf url (conf,pr) >>   
                       if elem url (a pr) || elem url (m pr) || elem url (b pr) then putStrLn $ url++"    Removido de la lista " else putStrLn "Url Invalida" >> eliminarRss pr conf
+
+tinyParser :: String -> Either (IO ()) Int
+tinyParser s = case (parse integer s) of
+                    [] -> Left $ putStrLn (s++"No es una opcion valida")
+                    x  -> case (x!!0) of
+                               (a,"") -> Right a
+                               _      -> Left $ putStrLn (s++"No es una opcion valida")
+
+
 
 
 

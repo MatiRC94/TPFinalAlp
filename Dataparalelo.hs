@@ -19,6 +19,8 @@ data Prior = P { a :: [Url]
 data Config = Fondo Int Int |
               Fuente Int Int deriving Show
 
+
+-- Titulo de la noticia, Url de donde se obtiene, cantidad de noticias de esa prioridad
 data News = N {  na :: ([(String,Url)],Int)
                 ,nm :: ([(String,Url)],Int)
                 ,nb :: ([(String,Url)],Int) } deriving Show
