@@ -12,7 +12,8 @@ all:
 .PHONY: clean
 
 clean:
-	$(RM) *.o *hi
+	$(RM) obj -r
+	$(RM) bin -r
 
 
 

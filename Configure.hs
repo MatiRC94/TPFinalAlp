@@ -9,7 +9,7 @@ import System.IO (hSetBuffering, stdin, BufferMode(NoBuffering))
 
 import Parsing 
 import Dataparalelo as D
-import Parser
+import TinyParser
 import Scraper
 
 initialNews = "# NA ([],0) \n# NM ([],0) \n# NB ([],0)"
@@ -208,9 +208,9 @@ updateNews :: Priority -> Prior -> News -> IO Int
 updateNews Alta p n = let newslist = (a p)                          
                           in do 
                                if (length newslist == 0) then putStrLn "No hay ningun diario en la lista." >> return 1 else do {scrapeo <- auxParse newslist ; writeNews Alta scrapeo p n ; return 0}
-updateNews Media p n= let newslist = (m p)                          
-                          in do 
-                               if (length newslist == 0) then putStrLn "No hay ningun diario en la lista." >> return 1 else do {scrapeo <- auxParse newslist ; writeNews Media scrapeo p n ; return 0}
+updateNews Media p n = let newslist = (m p)                          
+                           in do 
+                                if (length newslist == 0) then putStrLn "No hay ningun diario en la lista." >> return 1 else do {scrapeo <- auxParse newslist ; writeNews Media scrapeo p n ; return 0}
 updateNews Baja p n = let newslist = (b p)                          
                           in do 
                                if (length newslist == 0) then putStrLn "No hay ningun diario en la lista." >> return 1 else do {scrapeo <- auxParse newslist ; writeNews Baja scrapeo p n ; return 0}
@@ -222,7 +222,8 @@ auxParse []   = return []
 auxParse (x:xs) =  do 
                      scr  <- scrap x
                      scr2 <- auxParse xs
-                     return $ [(x,x)]++scr++scr2
+                     return $ scr++scr2
+                     ---return $ [(x,x)]++scr++scr2
 
 -- Escribe en el archivo de configuracion las nuevas noticias
 

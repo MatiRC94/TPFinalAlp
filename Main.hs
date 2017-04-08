@@ -20,9 +20,10 @@ bienvenida = "Bienvenido al Visor de noticias"
 
 
 --TODO VER Q PASA SI AGREGO UNA URL INCORRECTA Y COMO MANEJARLO
---TODO Bajar subir con flechitas
 --TODO LA PRIMERA VEZ HACE ERROR DE LINK
+--TODO PONER CARTEL DE CARGANDO CUANDO UPDATEAS PORQUE TARDA!!!!
 --TODO Opciones graficas
+--TODO La parte de opcioines para abrir en firefox
 
 
 
@@ -187,7 +188,7 @@ main = do
     do info <- procesarConf     ; agregarUrlConf "http://www.clarin.com/rss/lo-ultimo/" Alta info
     do info <- procesarConf     ;  showUrls $ snd info
     updateNews :: Priority -> Prior -> News -> IO ()
-    do info <- procesarConf     ; new <- findNews ;  updateNews Alta (snd info) new :: IO ()
+    do info <- procesarConf     ; new <- findNews ;  updateNews Media (snd info) new :: IO ()
 
 -}
          
