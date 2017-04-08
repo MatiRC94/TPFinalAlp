@@ -222,8 +222,8 @@ auxParse []   = return []
 auxParse (x:xs) =  do 
                      scr  <- scrap x
                      scr2 <- auxParse xs
-                     return $ scr++scr2
-                     ---return $ [(x,x)]++scr++scr2
+                     --return $ scr++scr2
+                     return $ [(x,x)]++scr++scr2
 
 -- Escribe en el archivo de configuracion las nuevas noticias
 

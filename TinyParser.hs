@@ -265,6 +265,7 @@ auxN =   alphanum
          <|> char '='
          <|> char '\147'
          <|> char '\148'
+         <|> char '�'
          <|> latin1
          <|> upper
          <|> space'
@@ -284,7 +285,7 @@ auxN =   alphanum
          <|> (do char '\\'
                  char '”')
 
---- Agrego caracteres (como las comillas a la izq o a der) por distintas representaciones en distintas paginas 
+--- Agrego caracteres (como las comillas a la izq o a der) por distintas representaciones y encoding en distintas paginas 
 
 
 latin1 :: Parser Char
