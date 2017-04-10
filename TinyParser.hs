@@ -267,6 +267,13 @@ auxN =   alphanum
          <|> char '\147'
          <|> char '\148'
          <|> char '�'
+         <|> char '*'
+         <|> char '('
+         <|> char ')'
+         <|> char '['
+         <|> char ']'
+         <|> char '>'
+         <|> char '<'
          <|> latin1
          <|> upper
          <|> space'

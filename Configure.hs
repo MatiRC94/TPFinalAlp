@@ -79,7 +79,6 @@ restoreDefault :: IO ()
 restoreDefault = do
                     defaultConfig
                     defaultNews
-                    clearScreen
                     procesarConf
                     clearScreen 
                     return ()                    
@@ -178,12 +177,6 @@ showNews Baja  = findNews >>= \x -> let tupla = nb x
 auxPrint :: (Int,(String,Url)) -> IO ()
 auxPrint (a,b) = putStrLn $ (ushow a++"- " ++ fst b)
 
-{-
---([(String,Url)],Int)
-auxPrint :: (String,Url) -> IO ()
-auxPrint n = putStrLn $ fst n
--}
-
 
 showNewsLink :: Priority -> IO ()
 showNewsLink Alta  = findNews >>= \x -> mapM_ auxPrint2 (fst $ na x)
@@ -194,9 +187,7 @@ auxPrint2 :: (String,Url) -> IO ()
 auxPrint2 n = putStrLn $ snd n
 
 
-
-
--- A partir de una Prioridad y una lista, Actualizo las noticias en el archivo de noticias  Left 0 right
+-- A partir de una Prioridad y una lista, Actualizo las noticias en el archivo de noticias  
 updateNews :: Priority -> Prior -> News -> IO Int
 updateNews Alta p n = let newslist = (a p)                          
                           in do 
