@@ -35,6 +35,7 @@ buffering = hSetBuffering stdin LineBuffering
 tamano2 :: IO (Window Int)
 tamano2 = size >>= \x -> return (fromJust x)
 
+--Calcula tamano de la consola
 tamano :: IO Int
 tamano = tamano2 >>= \x -> case x of
                                 Window a b -> return b
@@ -46,6 +47,7 @@ cursorCol = tamano >>= \t -> return (div (t- length bienvenida) 2)
 cursorStart :: IO ()
 cursorStart =  clearScreen >> setCursorPosition 0 0
 
+--Menu principal
 menu :: ([Config],Prior) -> IO ()           
 menu tup = do
              putStrLn "Elija alguna Accion\n"
@@ -61,6 +63,7 @@ menu tup = do
              cursorStart
              menu tup2
 
+--Menu para volver al menu principal
 volverMenu :: IO ()
 volverMenu = do
                         putStrLn "\n"
@@ -68,11 +71,10 @@ volverMenu = do
                         noBuffering
                         c <- getChar
                         case c of
---                            'w' -> scrollPageUp 1 >> volverMenu
-  --                          's' -> scrollPageDown 1 >> volverMenu
                             'q' -> exitSuccess
                             _   -> return ()
 
+-- Menu para agregar links
 agregarLinks :: ([Config],Prior) -> IO ()
 agregarLinks tup = do 
                      buffering
@@ -101,29 +103,32 @@ verNoticias p n = do
                      case c of
                          '1' -> updateNews Alta p n >>= \x -> case x of
                                                                    1 -> volverMenu
-                                                                   0 -> showNews Alta >> irUrl Alta n >> volverMenu
+                                                                   0 -> findNews >>= \news -> showNews Alta >> irUrl Alta news >> volverMenu
                          '2' -> updateNews Media p n >>= \x -> case x of
                                                                     1 -> volverMenu
-                                                                    0 -> showNews Media >> irUrl Media n >> volverMenu
+                                                                    0 -> findNews >>= \news -> showNews Media >> irUrl Media news >> volverMenu
                          '3' -> updateNews Baja p n >>= \x -> case x of
                                                                    1 -> volverMenu
-                                                                   0 -> showNews Baja >> irUrl Baja n >> volverMenu
+                                                                   0 -> findNews >>= \news -> showNews Baja >> irUrl Baja news >> volverMenu
                          'q' -> exitSuccess
                          _   -> putStrLn "Tecla incorrecta"
 
-irUrl :: Priority -> News -> IO ProcessHandle
+-- Abre el Link elegido si el indice es correcto
+irUrl :: Priority -> News -> IO ()
 irUrl p n = do
                  putStrLn "\n"
                  putStrLn "\n\nElija una Noticia para Abrir en Firefox"
                  buffering
                  c <- getLine
-                 case tinyParser c of
-                      Left x -> irUrl p n
-                      Right i -> runCommand $ "firefox "++getUrlNews p n i
-                 
+                 case parsercito c of
+                      Left x  -> irUrl p n
+                      Right i -> case str of
+                                      Left t    -> putStrLn "Error de Indice"
+                                      Right url -> (runCommand $ "firefox "++url) >> return ()
+                                 where str = getUrlNews p n i
                 
 
-
+--Menu sobre RSS
 infoRss :: Prior -> [Config] -> IO ()
 infoRss pr conf = do
                     cursorStart
@@ -136,22 +141,20 @@ infoRss pr conf = do
                          '0' -> exitSuccess
                          _   -> putStrLn "Tecla incorrecta"
 
+
+--Eliminar un Link RSS si el link se encuentra en la lista
 eliminarRss :: Prior -> [Config] -> IO ()
 eliminarRss pr conf = putStrLn "Ingrese Link RSS:" >> 
                       buffering >> 
                       getLine >>= \url -> if elem url (a pr) || elem url (m pr) || elem url (b pr) then removerUrlConf url (conf,pr) >>  putStrLn ( url++"    Removido de la lista ") else putStrLn "Url Invalida" >> eliminarRss pr conf
                       
-  
-
-tinyParser :: String -> Either (IO ()) Int
-tinyParser s = case (parse integer s) of
+--Parser para corroborar que lo ingresado sea un indice 
+parsercito :: String -> Either (IO ()) Int
+parsercito s = case (parse integer s) of
                     [] -> Left $ putStrLn (s++"No es una opcion valida")
                     x  -> case (x!!0) of
                                (a,"") -> Right a
                                _      -> Left $ putStrLn (s++"No es una opcion valida")
-
-
-
 
 
 main :: IO ()
@@ -166,23 +169,14 @@ main = do
         putStr bienvenida
         setCursorPosition 5 0
         menu info
-        --content <- readFile cfg
+
 {-
         info <- procesarConf
         clearScreen
         showUrls $ snd info
         checkAll $ snd info
         -- Menu inicial
--}
 
-
-
-{-
-   procesarConf :: IO ([Config],Prior)
- --   estilo $ snd info
---    agregarUrlConf "http://www.lacapital.com" Alta (snd info) (fst info)
---    agregarUrlConf "http://www.clarin.com/" Alta (snd info) (fst info)
---    url2 <- addUrl "http://www.clarin.com/" Alta urls
     0elegirColor
     clearScreen
     setCursorPosition 0 0

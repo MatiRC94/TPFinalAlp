@@ -90,7 +90,7 @@ auxU =   alphanum
          <|> char '\\'
          <|> char '?'
          <|> char '='
-
+         <|> alphanum
  
 
 
@@ -262,6 +262,7 @@ auxN =   alphanum
          <|> char '”'
          <|> char '!'
          <|> char '?'
+         <|> char ';'
          <|> char '='
          <|> char '\147'
          <|> char '\148'

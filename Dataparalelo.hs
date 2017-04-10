@@ -67,10 +67,10 @@ checkAll (P a m b) = do
                        checkAll' m
                        checkAll' b  
 
-getUrlNews :: Priority -> News -> Int -> Url
-getUrlNews Alta (N na nm nb) n  = if snd na < n+1 || n < 0 then "Error de Indice" else snd $ (fst na)!!n
-getUrlNews Media (N na nm nb) n = if snd nm < n+1 || n < 0 then "Error de Indice" else snd $ (fst nm)!!n
-getUrlNews Baja (N na nm nb) n  = if snd nb < n+1 || n < 0 then "Error de Indice" else snd $ (fst nb)!!n
+getUrlNews :: Priority -> News -> Int -> Either Int Url
+getUrlNews Alta (N na nm nb) n  = if snd na < n+1 || n < 0 then Left 0 else Right $ snd $ (fst na)!!n
+getUrlNews Media (N na nm nb) n = if snd nm < n+1 || n < 0 then Left 0 else Right $ snd $ (fst nm)!!n
+getUrlNews Baja (N na nm nb) n  = if snd nb < n+1 || n < 0 then Left 0 else Right $ snd $ (fst nb)!!n
 
 
 

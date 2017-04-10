@@ -196,7 +196,7 @@ auxPrint2 n = putStrLn $ snd n
 
 
 
--- A partir de una Prioridad y una lista, Actualizo las noticias en el archivo de noticias  Left 0 right News
+-- A partir de una Prioridad y una lista, Actualizo las noticias en el archivo de noticias  Left 0 right
 updateNews :: Priority -> Prior -> News -> IO Int
 updateNews Alta p n = let newslist = (a p)                          
                           in do 
@@ -219,7 +219,6 @@ auxParse (x:xs) =  do
                      return $ [(x,x)]++scr++scr2
 
 -- Escribe en el archivo de configuracion las nuevas noticias
-
 writeNews :: Priority -> [(String,Url)] -> Prior -> News -> IO ()
 writeNews Alta l p (N na1 nm1 nb1) = do
                                         let tam = length l
