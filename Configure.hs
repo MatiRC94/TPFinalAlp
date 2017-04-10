@@ -164,15 +164,8 @@ removerUrlConf' url pr conf = do
 
 removerUrlConf :: Url -> ([Config],Prior) -> IO () 
 removerUrlConf u (xs,p) = removerUrlConf' u p xs
-{-
-showNews :: Priority -> IO ()
-showNews Alta  = findNews >>= \x -> let tupla = na x
-                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (fst $ tupla)                                    
-showNews Media = findNews >>= \x -> let tupla = nm x
-                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (fst $ tupla)
-showNews Baja  = findNews >>= \x -> let tupla = nb x
-                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (fst $ tupla)
--}
+
+
 showNews :: Priority -> IO ()
 showNews Alta  = findNews >>= \x -> let tupla = na x
                                     in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (zip [0..] (fst tupla))                                    
@@ -203,7 +196,7 @@ auxPrint2 n = putStrLn $ snd n
 
 
 
--- A partir de una Prioridad y una lista, Actualizo las noticias en el archivo de noticias 
+-- A partir de una Prioridad y una lista, Actualizo las noticias en el archivo de noticias  Left 0 right News
 updateNews :: Priority -> Prior -> News -> IO Int
 updateNews Alta p n = let newslist = (a p)                          
                           in do 

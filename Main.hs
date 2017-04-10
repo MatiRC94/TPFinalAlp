@@ -51,7 +51,7 @@ menu tup = do
              putStrLn "Elija alguna Accion\n"
              c <- listarOpc opciones
              case c of
-                  '1' -> findNews >>= verNoticias (snd tup)
+                  '1' -> findNews >>= verNoticias (snd tup)     --- no necesito hacer findNews, las news q paso son las q estan en el archivo
                   '2' -> agregarLinks tup
                   '3' -> infoRss (snd tup) (fst tup)
                   '4' -> putStrLn "4"
@@ -90,6 +90,8 @@ agregarLinks tup = do
                          'q' -> exitSuccess
                          _   -> putStrLn "Tecla incorrecta"
 
+
+-- El problema es que la Prior se lee ahora, pero las news son las viejas entocnes el irurl usa la n vieja
 verNoticias :: Prior-> News -> IO ()
 verNoticias p n = do 
                      cursorStart
@@ -187,7 +189,7 @@ main = do
         do info <- procesarConf     ; agregarUrlConf "http://www.ole.com.ar/rss/ultimas-noticias/" Alta info
     do info <- procesarConf     ; agregarUrlConf "http://www.clarin.com/rss/lo-ultimo/" Alta info
     do info <- procesarConf     ;  showUrls $ snd info
-    updateNews :: Priority -> Prior -> News -> IO ()
+    updateNews :: Priority -> Prior -> News -> IO Int
     do info <- procesarConf     ; new <- findNews ;  updateNews Media (snd info) new :: IO ()
 
 -}
