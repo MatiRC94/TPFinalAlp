@@ -165,13 +165,13 @@ removerUrlConf :: Url -> ([Config],Prior) -> IO ()
 removerUrlConf u (xs,p) = removerUrlConf' u p xs
 
 
-showNews :: Priority -> IO ()
+showNews :: Priority -> IO Int
 showNews Alta  = findNews >>= \x -> let tupla = na x
-                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (zip [0..] (fst tupla))                                    
+                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" >> return 1 else mapM_ auxPrint (zip [0..] (fst tupla)) >> return 0                                    
 showNews Media = findNews >>= \x -> let tupla = nm x
-                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (zip [0..] (fst tupla))
+                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" >> return 1 else mapM_ auxPrint (zip [0..] (fst tupla)) >> return 0
 showNews Baja  = findNews >>= \x -> let tupla = nb x
-                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" else mapM_ auxPrint (zip [0..] (fst tupla))
+                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" >> return 1 else mapM_ auxPrint (zip [0..] (fst tupla)) >> return 0
 
 --([(String,Url)],Int)
 auxPrint :: (Int,(String,Url)) -> IO ()

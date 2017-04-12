@@ -13,10 +13,10 @@ import Dataparalelo
 import Configure
 
 opciones = ["1- Noticias", "2- Agregar Links RSS", "3- Info RSS", "4- Opciones Graficas","5- Restaurar Valores Predeterminados", "q- Salir","\n\nCualquier Otra tecla es Erronea"]
-opRss = ["1- Ver Status Rss", "2- Eliminar RSS", "3- Agregar Links RSS","q- Salir"]
-opGraph = ["1- Cambiar Estilo","2- Default Config","q- Salir"]
-opNews = ["1- Ver Noticias", "2- Actualizar Noticias","q- Salir"]
-prioridad = ["1- Alta", "2- Media", "3- Baja", "q- Salir"]
+opRss = ["1- Ver Status Rss", "2- Eliminar RSS", "3- Agregar Links RSS","v- Volver Menu","q- Salir"]
+opGraph = ["1- Cambiar Estilo","2- Default Config","v- Volver Menu","q- Salir"]
+opNews = ["1- Ver Noticias", "2- Actualizar Noticias","v- Volver Menu","q- Salir"]
+prioridad = ["1- Alta", "2- Media", "3- Baja","v- Volver Menu", "q- Salir"]
 titulo = "Resumidor de Noticias"
 bienvenida = "Bienvenido al Visor de noticias"
 
@@ -59,7 +59,7 @@ menu tup = do
                   '2' -> agregarLinks tup
                   '3' -> infoRss (snd tup) (fst tup)
                   '4' -> graphOptions (snd tup)
-                  '5' -> restoreDefault
+                  '5' -> putStrLn "\n Se volvio a la configuracion Default" >> restoreDefault
                   'q' -> exitSuccess
                   _   -> putStrLn "\nTecla incorrecta" >> menu tup
              tup2 <- procesarConf
@@ -92,6 +92,7 @@ agregarLinks tup = do
                          '1' -> agregarUrlConf url Alta tup >> putStrLn  (url++" Agregado") >> volverMenu
                          '2' -> agregarUrlConf url Media tup >> putStrLn (url++" Agregado") >> volverMenu
                          '3' -> agregarUrlConf url Baja tup >> putStrLn (url++" Agregado") >> volverMenu
+                         'v' -> volverMenu
                          'q' -> exitSuccess
                          _   -> putStrLn "Tecla incorrecta" >> agregarLinks tup
 
@@ -105,6 +106,7 @@ menuNoticias p n = do
                      case c of 
                          '1' -> verNoticias n
                          '2' -> actNoticias p n
+                         'v' -> volverMenu
                          'q' -> exitSuccess
                          _   -> putStrLn "Tecla incorrecta" >> menuNoticias p n
 
@@ -118,9 +120,16 @@ verNoticias news = do
                      c <- listarOpc prioridad
                      cursorStart
                      case c of 
-                         '1' -> showNews Alta >> irUrl Alta news >> volverMenu
-                         '2' -> showNews Media >> irUrl Media news >> volverMenu
-                         '3' -> showNews Baja >> irUrl Baja news >> volverMenu
+                         '1' -> showNews Alta >>= \x -> case x of
+                                                             1 -> volverMenu
+                                                             0 ->  irUrl Alta news >> volverMenu
+                         '2' -> showNews Media >>= \x -> case x of
+                                                              1 -> volverMenu
+                                                              0 ->  irUrl Media news >> volverMenu
+                         '3' -> showNews Baja >>= \x -> case x of
+                                                             1 -> volverMenu
+                                                             0 -> irUrl Baja news >> volverMenu
+                         'v' -> volverMenu
                          'q' -> exitSuccess
                          _   -> putStrLn "Tecla incorrecta" >> verNoticias news
 
@@ -135,13 +144,20 @@ actNoticias p n = do
                      case c of
                          '1' -> updateNews Alta p n >>= \x -> case x of
                                                                    1 -> volverMenu
-                                                                   0 -> findNews >>= \news -> showNews Alta >> irUrl Alta news >> volverMenu
+                                                                   0 -> findNews >>= \news -> showNews Alta >>= \x -> case x of
+                                                                                                                           1 -> volverMenu
+                                                                                                                           0 ->  irUrl Alta news >> volverMenu
                          '2' -> updateNews Media p n >>= \x -> case x of
                                                                     1 -> volverMenu
-                                                                    0 -> findNews >>= \news -> showNews Media >> irUrl Media news >> volverMenu
+                                                                    0 -> findNews >>= \news -> showNews Media >>= \x -> case x of
+                                                                                                                             1 -> volverMenu
+                                                                                                                             0 ->  irUrl Alta news >> volverMenu
                          '3' -> updateNews Baja p n >>= \x -> case x of
                                                                    1 -> volverMenu
-                                                                   0 -> findNews >>= \news -> showNews Baja >> irUrl Baja news >> volverMenu
+                                                                   0 -> findNews >>= \news -> showNews Baja >>= \x -> case x of
+                                                                                                                           1 -> volverMenu
+                                                                                                                           0 ->  irUrl Alta news >> volverMenu
+                         'v' -> volverMenu
                          'q' -> exitSuccess
                          _   -> putStrLn "Tecla incorrecta" >> actNoticias p n
 
@@ -170,7 +186,8 @@ infoRss pr conf = do
                          '1' -> cursorStart >> showUrls pr >> checkAll pr >> volverMenu
                          '2' -> cursorStart >> showUrls pr >> eliminarRss pr conf >> volverMenu
                          '3' -> agregarLinks (conf,pr) >> volverMenu
-                         '0' -> exitSuccess
+                         'v' -> volverMenu
+                         'q' -> exitSuccess
                          _   -> putStrLn "Tecla incorrecta" >> infoRss pr conf
 
 
@@ -197,6 +214,7 @@ graphOptions p =  do
                          '1' -> estilo p >> volverMenu
                          '2' -> defaultConfig >> volverMenu
                          'q' -> exitSuccess
+                         'v' -> volverMenu
                          _   -> putStrLn "Tecla incorrecta" >> graphOptions p
 
 
