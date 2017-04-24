@@ -21,26 +21,17 @@ titulo = "Resumidor de Noticias"
 bienvenida = "Bienvenido al Visor de noticias"
 
 
---TODO VER Q PASA SI AGREGO UNA URL INCORRECTA Y COMO MANEJARLO
---TODO LA PRIMERA VEZ HACE ERROR DE LINK
---TODO PONER CARTEL DE CARGANDO CUANDO UPDATEAS PORQUE TARDA!!!!
---TODO Opciones graficas
---TODO funcion de alto orden para error de tecla
-
-
-
 --Funcion para cargar el buffer y poder aceptar backspaces con getLine
 buffering :: IO ()
 buffering = hSetBuffering stdin LineBuffering
 
-
-tamano2 :: IO (Window Int)
-tamano2 = size >>= \x -> return (fromJust x)
-
---Calcula tamano de la consola
+--Calcula el tamano de la consola
 tamano :: IO Int
 tamano = tamano2 >>= \x -> case x of
                                 Window a b -> return b
+tamano2 :: IO (Window Int)
+tamano2 = size >>= \x -> return (fromJust x)
+
 
 -- Centrar el cursor para Escribir el titulo del Programa
 cursorCol :: IO Int
@@ -142,21 +133,21 @@ actNoticias p n = do
                      c <- listarOpc prioridad
                      cursorStart
                      case c of
-                         '1' -> updateNews Alta p n >>= \x -> case x of
-                                                                   1 -> volverMenu
-                                                                   0 -> findNews >>= \news -> showNews Alta >>= \x -> case x of
-                                                                                                                           1 -> volverMenu
-                                                                                                                           0 ->  irUrl Alta news >> volverMenu
-                         '2' -> updateNews Media p n >>= \x -> case x of
+                         '1' ->  putStrLn "Cargando\n" >> updateNews Alta p n >>= \x -> case x of
+                                                                                             1 -> volverMenu
+                                                                                             0 -> findNews >>= \news -> showNews Alta >>= \x -> case x of
+                                                                                                                                                     1 -> volverMenu
+                                                                                                                                                     0 ->  irUrl Alta news >> volverMenu
+                         '2' ->  putStrLn "Cargando\n" >> updateNews Media p n >>= \x -> case x of
                                                                     1 -> volverMenu
                                                                     0 -> findNews >>= \news -> showNews Media >>= \x -> case x of
                                                                                                                              1 -> volverMenu
                                                                                                                              0 ->  irUrl Alta news >> volverMenu
-                         '3' -> updateNews Baja p n >>= \x -> case x of
-                                                                   1 -> volverMenu
-                                                                   0 -> findNews >>= \news -> showNews Baja >>= \x -> case x of
-                                                                                                                           1 -> volverMenu
-                                                                                                                           0 ->  irUrl Alta news >> volverMenu
+                         '3' ->  putStrLn "Cargando\n" >> updateNews Baja p n >>= \x -> case x of
+                                                                                             1 -> volverMenu
+                                                                                             0 -> findNews >>= \news -> showNews Baja >>= \x -> case x of
+                                                                                                                                                     1 -> volverMenu
+                                                                                                                                                     0 ->  irUrl Alta news >> volverMenu
                          'v' -> volverMenu
                          'q' -> exitSuccess
                          _   -> putStrLn "Tecla incorrecta" >> actNoticias p n
@@ -165,14 +156,14 @@ actNoticias p n = do
 irUrl :: Priority -> News -> IO ()
 irUrl p n = do
                  putStrLn "\n"
-                 putStrLn "\n\nElija una Noticia para Abrir en Firefox"
+                 putStrLn "\n\nElija una Noticia para Abrir en Firefox o Escriba un indice incorrecto para volver"
                  buffering
                  c <- getLine
                  case parsercito c of
                       Left x  -> irUrl p n
                       Right i -> case str of
                                       Left t    -> putStrLn "Error de Indice"
-                                      Right url -> (runCommand $ "firefox "++url) >> return ()
+                                      Right url -> (runCommand $ "firefox "++url) >> irUrl p n
                                  where str = getUrlNews p n i
                 
 
@@ -205,20 +196,21 @@ parsercito s = case (parse integer s) of
                                (a,"") -> Right a
                                _      -> Left $ putStrLn (s++"No es una opcion valida")
 
+--Menu de opciones graficas
 graphOptions :: Prior -> IO ()
 graphOptions p =  do
                     cursorStart
                     putStrLn "Que desea hacer ?"
                     c <- listarOpc opGraph
                     case c of
-                         '1' -> estilo p >> volverMenu
+                         '1' -> elegirColor p >> volverMenu
                          '2' -> defaultConfig >> volverMenu
                          'q' -> exitSuccess
                          'v' -> volverMenu
                          _   -> putStrLn "Tecla incorrecta" >> graphOptions p
 
 
-                    
+-- Main principal              
 main :: IO ()
 main = do
         noBuffering
@@ -232,23 +224,6 @@ main = do
         setCursorPosition 5 0
         menu info
 
-{-
-        info <- procesarConf
-        clearScreen
-        showUrls $ snd info
-        checkAll $ snd info
-        -- Menu inicial
-
-    0elegirColor
-    clearScreen
-    setCursorPosition 0 0
-        do info <- procesarConf     ; agregarUrlConf "http://www.ole.com.ar/rss/ultimas-noticias/" Alta info
-    do info <- procesarConf     ; agregarUrlConf "http://www.clarin.com/rss/lo-ultimo/" Alta info
-    do info <- procesarConf     ;  showUrls $ snd info
-    updateNews :: Priority -> Prior -> News -> IO Int
-    do info <- procesarConf     ; new <- findNews ;  updateNews Media (snd info) new :: IO ()
-
--}
          
          
 

@@ -22,9 +22,9 @@ cfg = "Config/Config.cfg"
 notis="Config/Noticias.cfg"
 cfgtemp = "Config/ConfigTemp.cfg"
 notistemp="Config/NoticiasTemps.cfg"
---- ACA ESTA TODO LO QUE VENGA EN RELACION A LOS ARCHIVOS.CFG
 
 
+--Evalua la Configuracion y ejecuta el cambio de estilo
 evalConf :: Config -> IO ()
 evalConf (Fondo c i)  = setSGR [ SetColor Background (toColorI i) (toColor c) ]
 evalConf (Fuente c i) = setSGR [ SetColor Foreground (toColorI i) (toColor c) ]
@@ -36,11 +36,13 @@ findNews  = do
               contN <- readFile notis           
               return $ fst $ (parse (parseNews emptyNews) contN) !! 0
 
+--Checkea existencia del archivo de noticias
 checkNews :: IO ()
 checkNews = do 
               bool <- doesFileExist notis
               if bool then return () else defaultNews
 
+--Checkea existencia del archivo de configuracion
 checkCfg :: IO ()
 checkCfg = do 
              bool <- doesFileExist cfg
@@ -64,17 +66,19 @@ secNotis = do
              removingFiles notis
              renameFile notistemp notis
 
-
+--Crea el archivo de noticias por Default
 defaultNews :: IO ()
 defaultNews = do
                  writeFile notistemp initialNews
                  secNotis
 
+--Crea el archivo de configuracion por Default
 defaultConfig :: IO ()
 defaultConfig = do 
                  writeFile cfgtemp initialConfig
                  secCfg
 
+--Pone los archivos de configuracion y noticias por default
 restoreDefault :: IO ()
 restoreDefault = do
                     defaultConfig
@@ -91,31 +95,27 @@ procesarConf = do
                       in do mapM_ evalConf $ fst c
                             return (fst c ,snd c)       
 
-estilo :: Prior -> IO ()
-estilo p = do
-              putStrLn "Elija su estilo "
-              elegirColor p
+
+--Funcion para cambiar el Estilo del programa
 
 elegirColor :: Prior -> IO ()
 elegirColor p = do
+                     putStrLn "\nElija su estilo "
                      putStrLn "Color de Fondo:"
                      c1  <- listarOpc colores
-                   --  putStr  "\n"
                      clearScreen
                      putStrLn "Intensidad del color:"
                      i1 <- listarOpc intensidad
-                   --  putStr  "\n"
                      clearScreen
                      putStrLn "Color de Fuente:"
                      c2  <- listarOpc colores
-                   -- putStr  "\n"
                      clearScreen
                      putStrLn "Intensidad del color:"
                      i2 <- listarOpc intensidad
-                   --  putStr  "\n" 
                      clearScreen
                      changeConfigCol p [digitToInt(c1),digitToInt(i1),digitToInt(c2),digitToInt(i2)] 
 
+--Listar el argumento en forma de opciones
 listarOpc :: [String] -> IO Char
 listarOpc x = do 
                 mapM_ putStrLn x
@@ -127,19 +127,27 @@ listarOpc x = do
 noBuffering :: IO ()
 noBuffering = hSetBuffering stdin NoBuffering
 
+--Evita errores de tipos
 toColor:: Int -> Color
 toColor = toEnum
 
+--Evita errores de tipos
 toColorI:: Int -> ColorIntensity
 toColorI = toEnum
 
 
+--Cambia el archivo de configuracion, utiliza un archivo temporal para evitar problemas de LOCK
 changeConfigCol :: Prior -> [Int] -> IO ()
 changeConfigCol (D.P a m b) c = do
                                   writeFile cfgtemp $ "#Fondo "++ show (c!!0) ++" "++ show (c!!1) ++"\n"++"#Fuente "++ show (c!!2) ++" "++ show (c!!3) ++"\n"++"#P "++show a  ++ show m ++show b
                                   secCfg
                                   procesarConf
                                   return ()
+
+-- Agrrga una Url al archivo de config
+agregarUrlConf :: Url -> Priority -> ([Config],Prior) -> IO () 
+agregarUrlConf u pr (xs,p) = agregarUrlConf' u pr p xs
+
 
 agregarUrlConf' :: Url -> Priority -> Prior -> [Config] -> IO () 
 agregarUrlConf' url p pr conf = do
@@ -149,9 +157,9 @@ agregarUrlConf' url p pr conf = do
                                   procesarConf
                                   return ()
 
-agregarUrlConf :: Url -> Priority -> ([Config],Prior) -> IO () 
-agregarUrlConf u pr (xs,p) = agregarUrlConf' u pr p xs
-
+--Remueve una URL del archivo de config
+removerUrlConf :: Url -> ([Config],Prior) -> IO () 
+removerUrlConf u (xs,p) = removerUrlConf' u p xs
 
 removerUrlConf' ::Url -> Prior -> [Config] -> IO () 
 removerUrlConf' url pr conf = do
@@ -161,31 +169,18 @@ removerUrlConf' url pr conf = do
                                   procesarConf
                                   return ()
 
-removerUrlConf :: Url -> ([Config],Prior) -> IO () 
-removerUrlConf u (xs,p) = removerUrlConf' u p xs
-
-
+--Tomando una prioridad, Muestra las noticias que esten en el archivo de noticias sin actualizarlas
 showNews :: Priority -> IO Int
 showNews Alta  = findNews >>= \x -> let tupla = na x
-                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" >> return 1 else mapM_ auxPrint (zip [0..] (fst tupla)) >> return 0                                    
+                                    in if snd(tupla)==0 then putStrLn "No hay noticias" >> return 1 else mapM_ auxPrint (zip [0..] (fst tupla)) >> return 0                                    
 showNews Media = findNews >>= \x -> let tupla = nm x
-                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" >> return 1 else mapM_ auxPrint (zip [0..] (fst tupla)) >> return 0
+                                    in if snd(tupla)==0 then putStrLn "No hay noticias" >> return 1 else mapM_ auxPrint (zip [0..] (fst tupla)) >> return 0
 showNews Baja  = findNews >>= \x -> let tupla = nb x
-                                    in if snd(tupla)==0 then putStrLn "No hay RSS, no hay noticias" >> return 1 else mapM_ auxPrint (zip [0..] (fst tupla)) >> return 0
+                                    in if snd(tupla)==0 then putStrLn "No hay noticias" >> return 1 else mapM_ auxPrint (zip [0..] (fst tupla)) >> return 0
 
---([(String,Url)],Int)
+--Para imprimir de forma mas elegante y con numeros
 auxPrint :: (Int,(String,Url)) -> IO ()
 auxPrint (a,b) = putStrLn $ (ushow a++"- " ++ fst b)
-
-
-showNewsLink :: Priority -> IO ()
-showNewsLink Alta  = findNews >>= \x -> mapM_ auxPrint2 (fst $ na x)
-showNewsLink Media = findNews >>= \x -> mapM_ auxPrint2 (fst $ nm x)
-showNewsLink Baja  = findNews >>= \x -> mapM_ auxPrint2 (fst $ nb x)
-
-auxPrint2 :: (String,Url) -> IO ()
-auxPrint2 n = putStrLn $ snd n
-
 
 -- A partir de una Prioridad y una lista, Actualizo las noticias en el archivo de noticias  
 updateNews :: Priority -> Prior -> News -> IO Int
@@ -200,7 +195,7 @@ updateNews Baja p n = let newslist = (b p)
                                if (length newslist == 0) then putStrLn "No hay ningun diario en la lista." >> return 1 else do {scrapeo <- auxParse newslist ; writeNews Baja scrapeo p n ; return 0}
 
 
---Escribe las Noticias junto con su Link en el archivo Noticias.cfg
+--Escribe las Noticias junto con su Link en el archivo de noticias
 auxParse :: [Url] -> IO [(String, Url)]
 auxParse []   = return []  
 auxParse (x:xs) =  do 

@@ -4,5 +4,27 @@ por lo que solo  me servia para algunas paginas el scrapeo.
                    al final, tome la decision de utilizar la libreria feed, hecha especialmente para scraping de rss...
 Deberia haber elegido otro tipo de datos para almacenar informacion, dado que me interesaba que tengan un orden los links y eso
 
+El RSS de Telam:
+http://www.telam.com.ar/rss2/ultimasnoticias.xml
+no tiene link para desarrollo de noticia
+
+
+"http://www.clarin.com/rss/lo-ultimo/"
+"http://www.laizquierdadiario.com/spip.php?page=backend_portada"
+"http://contenidos.lanacion.com.ar/herramientas/rss-origen=2"
+"http://www.prensa.com/rss/section/1/"
+"http://tn.com.ar/rss.xml"      
+"http://www.telam.com.ar/rss2/ultimasnoticias.xml"
+"http://www.lapoliticaonline.com/files/rss/ultimasnoticias.xml"
+"http://www.ellitoral.com/rss/um.xml"    
+"http://www.nacion.com/rss/"
+"http://www.todojujuy.com/rss/todoelpais.xml"        
+"http://www.neuquenalinstante.com.ar/rss/1-sociedad.xml"
+"http://www.eltribuno.info/rss/salta/masleidas.xml"
+"http://www.perfil.com/rss/ultimomomento.xml"
+"http://diariolaopinion.com.ar/rss/general.xml"
+"http://www.ole.com.ar/rss/ultimas-noticias/"
+
+
 
 http://stackoverflow.com/questions/17038947/simple-rss-downloader-in-haskell

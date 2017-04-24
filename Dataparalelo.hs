@@ -25,7 +25,11 @@ data News = N {  na :: ([(String,Url)],Int)
                 ,nm :: ([(String,Url)],Int)
                 ,nb :: ([(String,Url)],Int) } deriving Show
 
-
+-- Agregar una URL asegurandonos que no se repita 
+addUrl :: Url -> Priority -> Prior -> IO Prior
+addUrl s Alta (P a m b) =  removeUrl s (P a m b) >>= addUrl' s Alta
+addUrl s Media (P a m b) = removeUrl s (P a m b) >>= addUrl' s Media 
+addUrl s Baja (P a m b) =  removeUrl s (P a m b) >>= addUrl' s Baja 
 
 
 addUrl' :: Url -> Priority -> Prior -> IO Prior
@@ -33,15 +37,11 @@ addUrl' s Alta (P a m b)  = return $ P (union [s] a) m b
 addUrl' s Media (P a m b) = return $ P a (union [s] m) b
 addUrl' s Baja (P a m b)  = return $ P a m (union [s] b)
 
-addUrl :: Url -> Priority -> Prior -> IO Prior
-addUrl s Alta (P a m b) =  removeUrl s (P a m b) >>= addUrl' s Alta
-addUrl s Media (P a m b) = removeUrl s (P a m b) >>= addUrl' s Media 
-addUrl s Baja (P a m b) =  removeUrl s (P a m b) >>= addUrl' s Baja 
-
+--Remueve una URL no importa de que Priority
 removeUrl :: Url -> Prior -> IO Prior
 removeUrl s (P a m b)  = return $ P (delete s a) (delete s m) (delete s b)
 
-
+--Muestra las URLS de cada priority
 showUrls :: Prior -> IO ()
 showUrls p = do
                putStrLn "Rss de prioridad Alta:  "
@@ -51,6 +51,7 @@ showUrls p = do
                putStrLn "Rss de prioridad Baja:  "
                mapM_ putStrLn ( b p )
 
+--Chequea si una Url esta Activa
 checkUrl :: Url -> IO ()
 checkUrl s = do 
                 x <- try ( simpleHTTP (getRequest s) ) :: IO (Either SomeException (Result (Response String) ) )
@@ -58,15 +59,19 @@ checkUrl s = do
                      Left ex   -> putStrLn "OFFLINE y cuidado que no funciona con https"
                      Right val -> putStrLn "ONLINE"
 
-checkAll' :: [Url] -> IO ()
-checkAll' url = mapM_ checkUrl url
-
+--Checkea la disponibilidad de todas las Url
 checkAll :: Prior -> IO ()
 checkAll (P a m b) = do
                        checkAll' a
                        checkAll' m
-                       checkAll' b  
+                       checkAll' b 
 
+
+checkAll' :: [Url] -> IO ()
+checkAll' url = mapM_ checkUrl url
+ 
+
+--Obtener las Urls o un 0 en caso de no existir ninguna
 getUrlNews :: Priority -> News -> Int -> Either Int Url
 getUrlNews Alta (N na nm nb) n  = if snd na < n+1 || n < 0 then Left 0 else Right $ snd $ (fst na)!!n
 getUrlNews Media (N na nm nb) n = if snd nm < n+1 || n < 0 then Left 0 else Right $ snd $ (fst nm)!!n

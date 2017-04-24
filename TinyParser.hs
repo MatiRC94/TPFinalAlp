@@ -3,9 +3,7 @@ module TinyParser where
 import Parsing 
 import Dataparalelo as D
 
-
-
-
+--Parser de Config, parte de Fondo
 fond :: Parser Config
 fond = do
          symbol "Fondo"
@@ -15,7 +13,7 @@ fond = do
          i <- nat
          return $ Fondo c i
 
-
+--Parser de Config, parte de Fuente
 font :: Parser Config
 font = do
          symbol "Fuente"
@@ -26,7 +24,7 @@ font = do
          return $ Fuente c i
 
                
- {-                  
+ {-            --  GRAMATICA A GROSSO MODO            
 conf  :: Parser Config
 conf  = (do fondo  <- fond
             return fondo)
@@ -44,40 +42,32 @@ urlP =  do
           symbol "P"
           space
           char '['
-   --       char '"'
-   --       alta <- urlParse
           alta <- algo
           char ']'
           space
           char '['
-   --       char '"'
-   --       media <- urlParse
           media <- algo
           char ']'
           space
           char '['
-  --        char '"'
-  --        baja <- urlParse
           baja <- algo
           char ']'
           return $ D.P alta media baja
 
-{-
-urlParse :: Parser [Url]
-urlParse = do
-             sepBy ( aux2 ) (char ',') 
+--Parsea la lista de Urls, teniendo en cuenta comillas y separacion por comas
+algo :: Parser [Url]
+algo = (do
+          char '\"'
+          xs <- many auxU
+          char '\"'
+          ((do
+              char ','
+              x <- algo
+              return ([xs]++x))
+            <|> return ([xs]) )
+        <|> 
+          return [])
 
--- Para parsear paginas
-aux2 :: Parser String
-aux2 = many1(   alphanum
-                 <|> char '.'
-                 <|> char '/'
-                 <|> char ':'
-                 <|> char '_'
-                 <|> char '-'
-                 <|> char '\"' ) 
-
--}
 
 -- Para parsear caracteres "raros" de las urls
 auxU :: Parser Char
@@ -91,21 +81,7 @@ auxU =   alphanum
          <|> char '?'
          <|> char '='
          <|> alphanum
- 
 
-
-algo :: Parser [Url]
-algo = (do
-          char '\"'
-          xs <- many auxU
-          char '\"'
-          ((do
-              char ','
-              x <- algo
-              return ([xs]++x))
-            <|> return ([xs]) )
-        <|> 
-          return [])
 {-                         
 num# -> # n | comment
 n -> P [algo] [algo] [algo] n| Fuente i i n| Fondo i i n 
@@ -113,6 +89,7 @@ algo -> '"' string '"' (E | ','algo ) | E
 comment -> alphanumsYspaces num#
 -}
 
+--Parser general para configuraciones y prior
 p1 :: [Config] -> Prior -> Parser ([Config],Prior)
 p1 config (D.P a m b)  = (do
                             space
@@ -136,7 +113,7 @@ p1 config (D.P a m b)  = (do
                             <|> return (config,(D.P a m b))
                                    
 
-
+--Reemplazar en caso de encontrar una configuracon vieja
 reemp :: Config -> [Config] -> [Config]
 reemp c [] = [c]
 reemp (Fondo a b) (x:xs) = case x of
@@ -147,19 +124,7 @@ reemp (Fuente a b) (x:xs) = case x of
                                 _          -> x : (reemp (Fuente a b) xs)
 
 
-
---parse (p1 [] (D.P [] [] [])) "#P [] [\"http://www.lacapital.com\",\"http://www.rosario3.com\"] [] caca \n caca \n #Fondo 0 0 \n #Fuente 7 1 caca"
-
---parse (p1 [] (D.P [] [] [])) "#Fondo 4 0 \n#Fuente 3 1\n#P [http://www.clarin.com/,http://www.lacapital.com] [] []"
-
-
---print ( a(fst ((parse urlP  ( "P [\"hola][][]") !! 0) ) ) )
-
--- " #Fondo 4 0 \n#Fuente 3 1 \n #P [\"http://www.lacapital.com\"][][] "
-
-
-
-
+--Parser general para las News
 parseNews :: News -> Parser News
 parseNews (N a m b)= (do
                         space
@@ -184,6 +149,8 @@ parseNews (N a m b)= (do
                                   parseNews (N a m b) 
                             <|> return (N a m b) 
                 
+
+--Parser por prioridades
 altaNew :: Parser ([(String,Url)],Int)
 altaNew = do
             symbol "NA"
@@ -205,14 +172,13 @@ bajaNew = do
             baja <- parseoT
             return baja
 
-
+--Parser de tuplas
 parseoT  :: Parser ([(String,Url)],Int)
 parseoT = do
             char '('
             t <- tuplas
             char ')'
             return t
-
 
 tuplas :: Parser ([(String,Url)],Int)
 tuplas = do
@@ -242,7 +208,9 @@ tuplas' = do
               <|> return ([(xs,url)]) )
           <|> return []
 
+
 --Parsear los titulos de las noticias 
+-- Agrego caracteres (como las comillas a la izq o a der) por distintas representaciones y encoding en distintas paginas 
 auxN :: Parser Char
 auxN =   alphanum 
          <|> char '.'
@@ -293,17 +261,14 @@ auxN =   alphanum
          <|> (do char '\\'
                  char '”')
 
---- Agrego caracteres (como las comillas a la izq o a der) por distintas representaciones y encoding en distintas paginas 
-
-
+--Para los acentos, y demas letras del espanol
 latin1 :: Parser Char
 latin1 = (char '®' <|> char '¡' <|> char '¿' <|> char '°' <|> char 'º' <|> char 'Á' <|> char 'É' <|> char 'Í' <|> char 'Ó' <|> char 'Ú' <|> char 'Ü' <|> char 'Ñ' <|> char 'ñ' <|> char 'á' <|> char 'é' <|> char 'í' <|> char 'ó' <|> char 'ú' <|> char 'ü' )
 
---"("\"Lo hicimos una vez...\"","http://www.ole.com.ar/futbol-internacional/eliminatorias/hacer_0_1766823451.html")"
 
---"# NA ([(\"choque\",\"www.choque.com\")],1) \n# NM ([],0) \n # NB ([],0)"
 
-{-  
+{-
+    --  GRAMATICA A GROSSO MODO  
  num# -> # n | comment
  n -> (NA | NM | NB ) parseoT
  parseoT -> "(" tuplas ")"
@@ -311,9 +276,6 @@ latin1 = (char '®' <|> char '¡' <|> char '¿' <|> char '°' <|> char 'º' <|> 
  tuplas' -> "(" "\"" auxN "\"" "," "\"" auxU "\"" ")" ( "," tupla' | E ) | E
  comment -> alphanumsYspaces num#
 -}
-
--- parse (parseNews (N ([],0) ([],0) ([],0) )) "# NA ([(\"\"Le pido a la gobernadora Vidal que recorra los hospitales sin aviso\"\",\"http://www.clarin.com/cartas-al-pais/pido-gobernadora-vidal-recorra-hospitales-aviso_0_HkJtghb3g.html\"),(\"\"Le pido a la gobernadora Vidal que recorra los hospitales sin aviso\"\",\"http://www.clarin.com/cartas-al-pais/pido-gobernadora-vidal-recorra-hospitales-aviso_0_HkJtghb3g.html\")],2) \n# NM ([],0) \n# NB ([],0)"
-
 
 
 
