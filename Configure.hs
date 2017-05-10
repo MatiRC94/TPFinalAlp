@@ -3,7 +3,7 @@ module Configure where
 import Text.Show.Unicode(ushow)
 import System.Console.ANSI as A (setSGR, SGR(..), ColorIntensity(..), ColorIntensity(..),ConsoleLayer (..), Color, clearScreen )
 import System.IO (putStrLn, getChar, readFile, writeFile)
-import System.Directory (doesFileExist,renameFile,removeFile)
+import System.Directory (createDirectoryIfMissing,doesFileExist,renameFile,removeFile)
 import Data.Char (digitToInt)
 import System.IO (hSetBuffering, stdin, BufferMode(NoBuffering))
 
@@ -18,6 +18,7 @@ emptyData = D.P [] [] []
 emptyNews = (N ([],0) ([],0) ([],0))
 colores =["0- Negro","1- Rojo","2- Verde","3- Amarillo","4- Azul","5- Magenta","6- Cyan","7- Blanco"]
 intensidad = ["0- Opaco","1- Vivido"]
+config="Config"
 cfg = "Config/Config.cfg"
 notis="Config/Noticias.cfg"
 cfgtemp = "Config/ConfigTemp.cfg"
@@ -35,6 +36,11 @@ findNews  = do
               checkNews
               contN <- readFile notis           
               return $ fst $ (parse (parseNews emptyNews) contN) !! 0
+
+--Checkea la existencia del directorio Config
+checkConfig :: IO ()
+checkConfig = createDirectoryIfMissing False config
+
 
 --Checkea existencia del archivo de noticias
 checkNews :: IO ()

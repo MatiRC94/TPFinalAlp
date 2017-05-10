@@ -214,6 +214,7 @@ graphOptions p =  do
 main :: IO ()
 main = do
         noBuffering
+        checkConfig
         checkCfg
         info <- procesarConf
         clearScreen
