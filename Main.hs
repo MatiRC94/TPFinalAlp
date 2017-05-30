@@ -46,7 +46,7 @@ menu tup = do
              putStrLn "Elija alguna Accion\n"
              c <- listarOpc opciones
              case c of
-                  '1' -> findNews >>= menuNoticias (snd tup)    --- no necesito hacer findNews, las news q paso son las q estan en el archivo
+                  '1' -> findNews >>= menuNoticias (snd tup)    
                   '2' -> agregarLinks tup
                   '3' -> infoRss (snd tup) (fst tup)
                   '4' -> graphOptions (snd tup)
@@ -125,7 +125,7 @@ verNoticias news = do
                          _   -> putStrLn "Tecla incorrecta" >> verNoticias news
 
 
--- Muestra las noticias actualizadas, realiza el scraping El problema es que la Prior se lee ahora, pero las news son las viejas entocnes el irurl usa la n vieja
+-- Muestra las noticias actualizadas, realiza el scraping
 actNoticias :: Prior-> News -> IO ()
 actNoticias p n = do 
                      cursorStart
